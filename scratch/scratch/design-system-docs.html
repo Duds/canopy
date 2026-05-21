@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System Documentation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            
+            --bg-primary: #FAF9F6;
+            --bg-secondary: #FFFFFF;
+            --bg-tertiary: #F5F0ED;
+            --bg-dark: #1A1A1A;
+            
+            --text-primary: #1A1A1A;
+            --text-secondary: #5C5C5C;
+            --text-muted: #8B8B8B;
+            
+            --accent-primary: #D4654A;
+            
+            --gutter: 24px;
+            --max-width: 1200px;
+        }
+
+        body {
+            font-family: var(--font-body);
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 60px;
+        }
+
+        h2 {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 700;
+            margin-top: 60px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        h3 {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 40px;
+            margin-bottom: 16px;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+        }
+
+        .font-specimen {
+            background: var(--bg-secondary);
+            padding: 32px;
+            margin: 24px 0;
+            border-radius: 8px;
+            border: 1px solid #E8E4E0;
+        }
+
+        .font-label {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-primary);
+            background: rgba(212, 101, 74, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+
+        .font-sample-display {
+            font-family: var(--font-display);
+            font-size: 72px;
+            font-weight: 700;
+            line-height: 1.1;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .font-sample-body {
+            font-family: var(--font-body);
+            font-size: 18px;
+            line-height: 1.7;
+            max-width: 600px;
+        }
+
+        .font-sample-mono {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: var(--bg-dark);
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+
+        .color-swatch {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #E8E4E0;
+        }
+
+        .color-preview {
+            height: 100px;
+        }
+
+        .color-info {
+            padding: 16px;
+            background: var(--bg-secondary);
+        }
+
+        .color-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .color-value {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 14px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #E8E4E0;
+        }
+
+        th {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .token-name {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--accent-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Design System Documentation</h1>
+        <p class="subtitle">Typography, colors, and design tokens for the portfolio.</p>
+
+        <h2>Typography</h2>
+        
+        <h3>Font Families</h3>
+        <p>The system uses three complementary typefaces, each serving a distinct purpose:</p>
+
+        <div class="font-specimen">
+            <span class="font-label">Display Font — Syne</span>
+            <p class="font-sample-display">Design with purpose</p>
+            <p style="margin-top: 16px; color: var(--text-muted);">Use for: Hero headlines, section titles, large display text. Always uppercase for headlines. Weights: 600–800.</p>
+        </div>
+
+        <div class="font-specimen">
+            <span class="font-label">Body Font — Space Grotesk</span>
+            <p class="font-sample-body">Space Grotesk is a proportional sans-serif typeface based on Space Mono. It brings a technical, contemporary feel while maintaining excellent readability across all sizes. Use for body text, navigation, buttons, and UI elements.</p>
+            <p style="margin-top: 16px; color: var(--text-muted);">Use for: Body text, navigation, buttons, form elements, subheadings. Weights: 300–700.</p>
+        </div>
+
+        <div class="font-specimen">
+            <span class="font-label">Monospace Font — Space Mono</span>
+            <p class="font-sample-mono">LABELS • CAPTIONS • METADATA<br>01 / 02 / 03 / 04<br>SYNE — 80px BOLD</p>
+            <p style="margin-top: 16px; color: var(--text-muted);">Use for: Labels, captions, metadata, timestamps, technical data. Always uppercase with wide letter-spacing for labels.</p>
+        </div>
+
+        <h3>Type Scale</h3>
+        <table>
+            <tr>
+                <th>Token</th>
+                <th>Mobile</th>
+                <th>Desktop</th>
+                <th>Line Height</th>
+                <th>Use Case</th>
+            </tr>
+            <tr>
+                <td class="token-name">--text-6xl</td>
+                <td>52px</td>
+                <td>72px</td>
+                <td>1.05</td>
+                <td>Hero headlines</td>
+            </tr>
+            <tr>
+                <td class="token-name">--text-5xl</td>
+                <td>44px</td>
+                <td>56px</td>
+                <td>1.1</td>
+                <td>H1, major titles</td>
+            </tr>
+            <tr>
+                <td class="token-name">--text-4xl</td>
+                <td>36px</td>
+                <td>44px</td>
+                <td>1.15</td>
+                <td>H2, section titles</td>
+            </tr>
+            <tr>
+                <td class="token-name">--text-3xl</td>
+                <td>28px</td>
+                <td>34px</td>
+                <td>1.2</td>
+                <td>H3, subsections</td>
+            </tr>
+            <tr>
+                <td class="token-name">--text-2xl</td>
+                <td>23px</td>
+                <td>26px</td>
+                <td>1.25</td>
+                <td>H4, card titles</td>
+            </tr>
+            <tr>
+                <td class="token-name">--text-xl</td>
+                <td>19px</td>
+                <td>21px</td>
+                <td>1.3</td>
+                <td>H5, small headings</td>
+            </tr>
+            <tr>
+                <td class="token-name">--text-lg</td>
+                <td>17px</td>
+                <td>18px</td>
+                <td>1.7</td>
+                <td>Body large, lead text</td>
+            </tr>
+            <tr>
+                <td class="token-name">--text-base</td>
+                <td>15px</td>
+                <td>16px</td>
+                <td>1.5</td>
+                <td>Body text</td>
+            </tr>
+            <tr>
+                <td class="token-name">--text-sm</td>
+                <td colspan="2">13px</td>
+                <td>1.5</td>
+                <td>Small text, captions</td>
+            </tr>
+            <tr>
+                <td class="token-name">--text-xs</td>
+                <td colspan="2">11px</td>
+                <td>1.4</td>
+                <td>Labels, timestamps</td>
+            </tr>
+        </table>
+
+        <h2>Colors</h2>
+        
+        <h3>Background Colors</h3>
+        <div class="color-grid">
+            <div class="color-swatch">
+                <div class="color-preview" style="background: #FAF9F6;"></div>
+                <div class="color-info">
+                    <p class="color-name">Primary Background</p>
+                    <p class="color-value">#FAF9F6</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Warm off-white. Main page background.</p>
+                </div>
+            </div>
+            <div class="color-swatch">
+                <div class="color-preview" style="background: #FFFFFF; border-bottom: 1px solid #E8E4E0;"></div>
+                <div class="color-info">
+                    <p class="color-name">Secondary Background</p>
+                    <p class="color-value">#FFFFFF</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Pure white. Cards, elevated surfaces.</p>
+                </div>
+            </div>
+            <div class="color-swatch">
+                <div class="color-preview" style="background: #F5F0ED;"></div>
+                <div class="color-info">
+                    <p class="color-name">Tertiary Background</p>
+                    <p class="color-value">#F5F0ED</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Terracotta-tinted. Section alternates.</p>
+                </div>
+            </div>
+            <div class="color-swatch">
+                <div class="color-preview" style="background: #1A1A1A;"></div>
+                <div class="color-info">
+                    <p class="color-name">Dark Background</p>
+                    <p class="color-value">#1A1A1A</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Footer, dark sections.</p>
+                </div>
+            </div>
+        </div>
+
+        <h3>Accent Colors</h3>
+        <div class="color-grid">
+            <div class="color-swatch">
+                <div class="color-preview" style="background: #D4654A;"></div>
+                <div class="color-info">
+                    <p class="color-name">Primary Accent</p>
+                    <p class="color-value">#D4654A</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Terracotta. CTA buttons, links, highlights.</p>
+                </div>
+            </div>
+            <div class="color-swatch">
+                <div class="color-preview" style="background: #2D5A4A;"></div>
+                <div class="color-info">
+                    <p class="color-name">Secondary Accent</p>
+                    <p class="color-value">#2D5A4A</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Deep forest. Secondary actions, variation.</p>
+                </div>
+            </div>
+        </div>
+
+        <h3>Text Colors</h3>
+        <div class="color-grid">
+            <div class="color-swatch">
+                <div class="color-preview" style="background: #1A1A1A;"></div>
+                <div class="color-info">
+                    <p class="color-name">Primary Text</p>
+                    <p class="color-value">#1A1A1A</p>
+                </div>
+            </div>
+            <div class="color-swatch">
+                <div class="color-preview" style="background: #5C5C5C;"></div>
+                <div class="color-info">
+                    <p class="color-name">Secondary Text</p>
+                    <p class="color-value">#5C5C5C</p>
+                </div>
+            </div>
+            <div class="color-swatch">
+                <div class="color-preview" style="background: #8B8B8B;"></div>
+                <div class="color-info">
+                    <p class="color-name">Muted Text</p>
+                    <p class="color-value">#8B8B8B</p>
+                </div>
+            </div>
+        </div>
+
+        <h2>CSS Variables</h2>
+        <div class="code-block">:root {
+  /* Fonts */
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  
+  /* Colors */
+  --bg-primary: #FAF9F6;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F5F0ED;
+  --bg-dark: #1A1A1A;
+  
+  --text-primary: #1A1A1A;
+  --text-secondary: #5C5C5C;
+  --text-muted: #8B8B8B;
+  
+  --accent-primary: #D4654A;
+  --accent-secondary: #2D5A4A;
+  
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+  
+  /* Grid */
+  --max-width: 1200px;
+  --gutter: 24px;
+}</div>
+
+        <h2>Brand Image Treatment</h2>
+        <p>All images receive consistent treatment to maintain brand recognition:</p>
+        <ol style="margin: 16px 0; padding-left: 24px; color: var(--text-secondary);">
+            <li style="margin-bottom: 8px;"><strong>Subtle desaturation:</strong> Filter reduces saturation to 85% for cohesion</li>
+            <li style="margin-bottom: 8px;"><strong>Contrast boost:</strong> Slight contrast increase (1.05) for definition</li>
+            <li style="margin-bottom: 8px;"><strong>Terracotta overlay:</strong> Gradient multiply blend adds warmth</li>
+            <li style="margin-bottom: 8px;"><strong>Geometric accent:</strong> Optional corner triangle in primary accent</li>
+            <li><strong>Smooth scale:</strong> Images zoom slowly on hover (0.6s ease)</li>
+        </ol>
+
+        <h2>Usage Guidelines</h2>
+        
+        <h3>Typography Hierarchy</h3>
+        <ul style="margin: 16px 0; padding-left: 24px; color: var(--text-secondary);">
+            <li style="margin-bottom: 8px;">Always use Syne in uppercase for headlines</li>
+            <li style="margin-bottom: 8px;">Space Mono for all labels and metadata (uppercase, tracked)</li>
+            <li style="margin-bottom: 8px;">Maintain adequate contrast between text sizes (≥1.25 ratio)</li>
+            <li>Maximum line length: 65–75 characters for body text</li>
+        </ul>
+
+        <h3>Color Usage</h3>
+        <ul style="margin: 16px 0; padding-left: 24px; color: var(--text-secondary);">
+            <li style="margin-bottom: 8px;">Primary accent (terracotta) for CTAs and key highlights only</li>
+            <li style="margin-bottom: 8px;">Avoid pure black (#000) and pure white (#FFF)</li>
+            <li style="margin-bottom: 8px;">Use bg-tertiary sparingly for section alternation</li>
+            <li>Maintain WCAG AA contrast ratios (4.5:1 minimum)</li>
+        </ul>
+
+        <h3>Spacing Rhythm</h3>
+        <ul style="margin: 16px 0; padding-left: 24px; color: var(--text-secondary);">
+            <li style="margin-bottom: 8px;">Section padding: 96px mobile, 128px desktop</li>
+            <li style="margin-bottom: 8px;">Component gaps: 16–24px</li>
+            <li>Vary spacing to create visual rhythm—don't use same value everywhere</li>
+        </ul>
+    </div>
+</body>
+</html>

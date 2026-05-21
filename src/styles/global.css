@@ -1,0 +1,38 @@
+@import './tokens.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-brand-surface text-brand-text font-sans leading-relaxed;
+  }
+
+  h1 {
+    @apply text-4xl font-bold leading-tight tracking-tight;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold leading-snug tracking-tight;
+  }
+
+  h3 {
+    @apply text-xl font-semibold leading-relaxed tracking-tight;
+  }
+
+  h4, h5, h6 {
+    @apply font-sans tracking-tight;
+  }
+
+  a {
+    @apply text-brand-accent no-underline transition-colors duration-150 ease-out;
+  }
+
+  a:hover {
+    @apply text-opacity-90;
+  }
+
+  a:focus-visible {
+    @apply outline-none ring-2 ring-brand-accent ring-offset-2;
+  }
+}

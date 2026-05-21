@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Not To Do — AI Slop vs Intentional Design</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+
+            --bg-primary: #F5F3EF;
+            --bg-secondary: #FFFFFF;
+            --bg-tertiary: #EDE9E4;
+            --bg-dark: #1A1A1A;
+
+            --text-primary: #1A1A1A;
+            --text-secondary: #4A4A4A;
+            --text-muted: #8B8B8B;
+            --text-inverse: #FFFFFF;
+
+            --accent-primary: #C45B3F;
+            --accent-warm: #D4A574;
+            --accent-terracotta: #B8543D;
+
+            --rule-color: rgba(26, 26, 26, 0.08);
+            --rule-thick: rgba(26, 26, 26, 0.15);
+
+            --text-xs: 11px;
+            --text-sm: 13px;
+            --text-base: 16px;
+            --text-lg: 19px;
+            --text-xl: 22px;
+            --text-2xl: 28px;
+            --text-3xl: 36px;
+            --text-4xl: 48px;
+            --text-5xl: 64px;
+
+            --leading-tight: 0.92;
+            --leading-snug: 1.1;
+            --leading-normal: 1.5;
+
+            --tracking-tight: -0.03em;
+            --tracking-wider: 0.1em;
+
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 24px;
+            --space-6: 32px;
+            --space-7: 48px;
+            --space-8: 64px;
+            --space-9: 96px;
+            --space-10: 128px;
+
+            --max-width: 1280px;
+            --gutter: 24px;
+
+            --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: var(--leading-normal);
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .type-display {
+            font-family: var(--font-display);
+            font-size: var(--text-5xl);
+            font-weight: 700;
+            line-height: var(--leading-tight);
+            letter-spacing: var(--tracking-tight);
+        }
+
+        .type-heading {
+            font-family: var(--font-display);
+            font-size: var(--text-3xl);
+            font-weight: 600;
+            line-height: var(--leading-snug);
+            letter-spacing: var(--tracking-tight);
+        }
+
+        .type-body-large {
+            font-family: var(--font-body);
+            font-size: var(--text-lg);
+            font-weight: 400;
+            line-height: var(--leading-normal);
+        }
+
+        .type-label {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            color: var(--text-muted);
+        }
+
+        .container {
+            width: 100%;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 var(--gutter);
+            position: relative;
+        }
+
+        .section {
+            padding: var(--space-9) 0;
+            position: relative;
+        }
+
+        .section-rule {
+            border-top: 1px solid var(--rule-thick);
+        }
+
+        .hero {
+            position: relative;
+            min-height: 50vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero__content {
+            max-width: 640px;
+        }
+
+        .hero__label { margin-bottom: var(--space-5); }
+        .hero__title { margin-bottom: var(--space-5); }
+        .hero__desc { color: var(--text-secondary); max-width: 520px; }
+
+        /* ========================================
+           COMPARISON GRID
+           ======================================== */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--gutter);
+        }
+
+        .comparison__col {
+            padding: var(--space-6);
+        }
+
+        .comparison__col--slop {
+            background: #FAFAFA;
+            border: 1px solid #E0E0E0;
+        }
+
+        .comparison__col--good {
+            background: var(--bg-secondary);
+            border: 1px solid var(--rule-color);
+        }
+
+        .comparison__label {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            margin-bottom: var(--space-5);
+        }
+
+        .comparison__label--slop {
+            color: #E74C3C;
+        }
+
+        .comparison__label--good {
+            color: var(--accent-primary);
+        }
+
+        /* ========================================
+           SLOP PATTERNS
+           ======================================== */
+
+        /* 1. Card Zoom */
+        .slop-card {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .slop-card:hover {
+            transform: scale(1.02) translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+
+        .slop-card__icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .slop-card__title {
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .slop-card__desc {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* 2. Side Stripe */
+        .slop-stripe {
+            background: #FFFFFF;
+            border-left: 4px solid #667eea;
+            padding: 20px 24px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .slop-stripe__title {
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .slop-stripe__desc {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* 3. Gradient Text */
+        .slop-gradient-text {
+            font-family: var(--font-display);
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 4. Glassmorphism Nav */
+        .slop-nav {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .slop-nav__logo {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .slop-nav__links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .slop-nav__link {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* 5. Three Feature Columns */
+        .slop-features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .slop-feature {
+            text-align: center;
+            padding: 32px 24px;
+            background: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .slop-feature__icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+        }
+
+        .slop-feature__title {
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .slop-feature__desc {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* ========================================
+           GOOD PATTERNS
+           ======================================== */
+
+        /* 1. Border Shift Card */
+        .good-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--rule-color);
+            padding: var(--space-6);
+            cursor: pointer;
+            transition: border-color 0.3s var(--ease-out-quart);
+        }
+
+        .good-card:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .good-card__meta {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            color: var(--text-muted);
+            margin-bottom: var(--space-3);
+        }
+
+        .good-card__title {
+            font-family: var(--font-display);
+            font-size: var(--text-base);
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+        }
+
+        .good-card__desc {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            line-height: 1.6;
+        }
+
+        /* 2. Full Border Accent */
+        .good-border {
+            background: var(--bg-secondary);
+            border: 1px solid var(--rule-color);
+            padding: var(--space-5) var(--space-6);
+            transition: border-color 0.3s var(--ease-out-quart);
+        }
+
+        .good-border:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .good-border__title {
+            font-family: var(--font-display);
+            font-size: var(--text-base);
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+        }
+
+        .good-border__desc {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+        }
+
+        /* 3. Solid Color Emphasis */
+        .good-solid-text {
+            font-family: var(--font-display);
+            font-size: var(--text-4xl);
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        /* 4. Solid Nav */
+        .good-nav {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--rule-color);
+            padding: var(--space-4) var(--space-6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .good-nav__logo {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .good-nav__links {
+            display: flex;
+            gap: var(--space-6);
+        }
+
+        .good-nav__link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: var(--text-sm);
+            position: relative;
+        }
+
+        .good-nav__link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--accent-primary);
+            transition: width 0.3s var(--ease-out-expo);
+        }
+
+        .good-nav__link:hover::after {
+            width: 100%;
+        }
+
+        /* 5. Asymmetric Features */
+        .good-features {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: var(--gutter);
+        }
+
+        .good-feature {
+            background: var(--bg-secondary);
+            border: 1px solid var(--rule-color);
+            padding: var(--space-6);
+        }
+
+        .good-feature--large {
+            grid-row: span 2;
+        }
+
+        .good-feature__meta {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            color: var(--text-muted);
+            margin-bottom: var(--space-3);
+        }
+
+        .good-feature__title {
+            font-family: var(--font-display);
+            font-size: var(--text-lg);
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+        }
+
+        .good-feature__desc {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            .slop-features,
+            .good-features {
+                grid-template-columns: 1fr;
+            }
+            .good-feature--large {
+                grid-row: span 1;
+            }
+            .type-display {
+                font-size: var(--text-4xl);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero__content">
+                <div class="type-label hero__label">Diagnostic Reference</div>
+                <h1 class="type-display hero__title">What Not<br>To Do</h1>
+                <p class="type-body-large hero__desc">
+                    Side-by-side comparisons of AI-slop patterns versus intentional design. Use this as a diagnostic tool when evaluating any component.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison 1: Card Hover -->
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">01 — Card Hover State</div>
+            <div class="comparison">
+                <div class="comparison__col comparison__col--slop">
+                    <div class="comparison__label comparison__label--slop">AI Slop</div>
+                    <div class="slop-card">
+                        <div class="slop-card__icon"></div>
+                        <div class="slop-card__title">Feature Card</div>
+                        <div class="slop-card__desc">The classic zoom + shadow lift. Every AI portfolio has this.</div>
+                    </div>
+                    <div style="margin-top: var(--space-4); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted);">
+                        transform: scale(1.02);<br>
+                        box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+                    </div>
+                </div>
+                <div class="comparison__col comparison__col--good">
+                    <div class="comparison__label comparison__label--good">Intentional</div>
+                    <div class="good-card">
+                        <div class="good-card__meta">2024 / Brand</div>
+                        <div class="good-card__title">Project Card</div>
+                        <div class="good-card__desc">Border color shift signals interactivity without lifting the element.</div>
+                    </div>
+                    <div style="margin-top: var(--space-4); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted);">
+                        border-color: var(--accent-primary);<br>
+                        transition: border-color 0.3s ease-out-quart;
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison 2: Accent Border -->
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">02 — Accent Border</div>
+            <div class="comparison">
+                <div class="comparison__col comparison__col--slop">
+                    <div class="comparison__label comparison__label--slop">AI Slop</div>
+                    <div class="slop-stripe">
+                        <div class="slop-stripe__title">Callout Block</div>
+                        <div class="slop-stripe__desc">Side-stripe border is the training-data default for "call attention."</div>
+                    </div>
+                    <div style="margin-top: var(--space-4); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted);">
+                        border-left: 4px solid #667eea;
+                    </div>
+                </div>
+                <div class="comparison__col comparison__col--good">
+                    <div class="comparison__label comparison__label--good">Intentional</div>
+                    <div class="good-border">
+                        <div class="good-border__title">Callout Block</div>
+                        <div class="good-border__desc">Full border or nothing. The accent is in the typography, not the decoration.</div>
+                    </div>
+                    <div style="margin-top: var(--space-4); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted);">
+                        border: 1px solid var(--rule-color);<br>
+                        &:hover { border-color: var(--accent-primary); }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison 3: Gradient Text -->
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">03 — Gradient Text</div>
+            <div class="comparison">
+                <div class="comparison__col comparison__col--slop">
+                    <div class="comparison__label comparison__label--slop">AI Slop</div>
+                    <div class="slop-gradient-text">Display Type</div>
+                    <div style="margin-top: var(--space-4); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted);">
+                        background: linear-gradient(135deg, #667eea, #764ba2);<br>
+                        -webkit-background-clip: text;
+                    </div>
+                </div>
+                <div class="comparison__col comparison__col--good">
+                    <div class="comparison__label comparison__label--good">Intentional</div>
+                    <div class="good-solid-text">Display Type</div>
+                    <div style="margin-top: var(--space-4); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted);">
+                        color: var(--accent-primary);
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison 4: Navigation -->
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">04 — Sticky Navigation</div>
+            <div class="comparison">
+                <div class="comparison__col comparison__col--slop">
+                    <div class="comparison__label comparison__label--slop">AI Slop</div>
+                    <div class="slop-nav">
+                        <div class="slop-nav__logo">Brand</div>
+                        <div class="slop-nav__links">
+                            <a class="slop-nav__link">Work</a>
+                            <a class="slop-nav__link">About</a>
+                            <a class="slop-nav__link">Contact</a>
+                        </div>
+                    </div>
+                    <div style="margin-top: var(--space-4); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted);">
+                        backdrop-filter: blur(10px);<br>
+                        background: rgba(255,255,255,0.8);
+                    </div>
+                </div>
+                <div class="comparison__col comparison__col--good">
+                    <div class="comparison__label comparison__label--good">Intentional</div>
+                    <div class="good-nav">
+                        <div class="good-nav__logo">Brand</div>
+                        <div class="good-nav__links">
+                            <a class="good-nav__link">Work</a>
+                            <a class="good-nav__link">About</a>
+                            <a class="good-nav__link">Contact</a>
+                        </div>
+                    </div>
+                    <div style="margin-top: var(--space-4); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted);">
+                        background: var(--bg-secondary);<br>
+                        border-bottom: 1px solid var(--rule-color);
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison 5: Feature Grid -->
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">05 — Feature Grid</div>
+            <div class="comparison">
+                <div class="comparison__col comparison__col--slop">
+                    <div class="comparison__label comparison__label--slop">AI Slop</div>
+                    <div class="slop-features">
+                        <div class="slop-feature">
+                            <div class="slop-feature__icon"></div>
+                            <div class="slop-feature__title">Feature One</div>
+                            <div class="slop-feature__desc">Icon + heading + text. The most generic pattern.</div>
+                        </div>
+                        <div class="slop-feature">
+                            <div class="slop-feature__icon"></div>
+                            <div class="slop-feature__title">Feature Two</div>
+                            <div class="slop-feature__desc">Repeated three times because that's the default.</div>
+                        </div>
+                        <div class="slop-feature">
+                            <div class="slop-feature__icon"></div>
+                            <div class="slop-feature__title">Feature Three</div>
+                            <div class="slop-feature__desc">No variation, no rhythm, no editorial thinking.</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: var(--space-4); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted);">
+                        grid-template-columns: repeat(3, 1fr);<br>
+                        text-align: center;
+                    </div>
+                </div>
+                <div class="comparison__col comparison__col--good">
+                    <div class="comparison__label comparison__label--good">Intentional</div>
+                    <div class="good-features">
+                        <div class="good-feature good-feature--large">
+                            <div class="good-feature__meta">Primary</div>
+                            <div class="good-feature__title">Feature One</div>
+                            <div class="good-feature__desc">Asymmetric grid with varied sizes. The large card commands attention. Editorial rhythm, not template repetition.</div>
+                        </div>
+                        <div class="good-feature">
+                            <div class="good-feature__meta">Secondary</div>
+                            <div class="good-feature__title">Feature Two</div>
+                            <div class="good-feature__desc">Smaller, supporting.</div>
+                        </div>
+                        <div class="good-feature">
+                            <div class="good-feature__meta">Secondary</div>
+                            <div class="good-feature__title">Feature Three</div>
+                            <div class="good-feature__desc">Varied widths create tension.</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: var(--space-4); font-family: var(--font-mono); font-size: var(--text-xs); color: var(--text-muted);">
+                        grid-template-columns: 2fr 1fr 1fr;<br>
+                        .good-feature--large { grid-row: span 2; }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Summary -->
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">Summary</div>
+            <div style="background: var(--bg-secondary); border: 1px solid var(--rule-color); padding: var(--space-7); max-width: 800px;">
+                <p class="type-body-large" style="margin-bottom: var(--space-5);">
+                    The difference is not complexity. The slop patterns are often technically simpler than the intentional ones. The difference is <strong>intent</strong>.
+                </p>
+                <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--space-5);">
+                    AI defaults to patterns that were common in training data — rounded corners, gradient text, card zooms, three-column grids. These patterns are not wrong in isolation. They are wrong when they appear <em>without decision</em>.
+                </p>
+                <p style="color: var(--text-secondary); line-height: 1.7;">
+                    Intentional design means every choice has a reason. The border shift signals interactivity without lifting. The asymmetric grid creates visual tension. The solid color is confident. The flat nav is grounded. Nothing is default.
+                </p>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

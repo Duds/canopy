@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animation Vocabulary — Anti-Slop Micro-Interactions</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+
+            --bg-primary: #F5F3EF;
+            --bg-secondary: #FFFFFF;
+            --bg-tertiary: #EDE9E4;
+            --bg-dark: #1A1A1A;
+
+            --text-primary: #1A1A1A;
+            --text-secondary: #4A4A4A;
+            --text-muted: #8B8B8B;
+            --text-inverse: #FFFFFF;
+
+            --accent-primary: #C45B3F;
+            --accent-warm: #D4A574;
+            --accent-terracotta: #B8543D;
+
+            --rule-color: rgba(26, 26, 26, 0.08);
+            --rule-thick: rgba(26, 26, 26, 0.15);
+
+            --text-xs: 11px;
+            --text-sm: 13px;
+            --text-base: 16px;
+            --text-lg: 19px;
+            --text-xl: 22px;
+            --text-2xl: 28px;
+            --text-3xl: 36px;
+            --text-4xl: 48px;
+            --text-5xl: 64px;
+
+            --leading-tight: 0.92;
+            --leading-snug: 1.1;
+            --leading-normal: 1.5;
+
+            --tracking-tight: -0.03em;
+            --tracking-wider: 0.1em;
+
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 24px;
+            --space-6: 32px;
+            --space-7: 48px;
+            --space-8: 64px;
+            --space-9: 96px;
+            --space-10: 128px;
+
+            --max-width: 1280px;
+            --gutter: 24px;
+
+            --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: var(--leading-normal);
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .type-display {
+            font-family: var(--font-display);
+            font-size: var(--text-5xl);
+            font-weight: 700;
+            line-height: var(--leading-tight);
+            letter-spacing: var(--tracking-tight);
+        }
+
+        .type-heading {
+            font-family: var(--font-display);
+            font-size: var(--text-3xl);
+            font-weight: 600;
+            line-height: var(--leading-snug);
+            letter-spacing: var(--tracking-tight);
+        }
+
+        .type-body-large {
+            font-family: var(--font-body);
+            font-size: var(--text-lg);
+            font-weight: 400;
+            line-height: var(--leading-normal);
+        }
+
+        .type-label {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            color: var(--text-muted);
+        }
+
+        .container {
+            width: 100%;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 var(--gutter);
+            position: relative;
+        }
+
+        .section {
+            padding: var(--space-9) 0;
+            position: relative;
+        }
+
+        .section-rule {
+            border-top: 1px solid var(--rule-thick);
+        }
+
+        .hero {
+            position: relative;
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero__content {
+            max-width: 640px;
+        }
+
+        .hero__label { margin-bottom: var(--space-5); }
+        .hero__title { margin-bottom: var(--space-5); }
+        .hero__desc { color: var(--text-secondary); max-width: 520px; }
+
+        /* ========================================
+           ANIMATION VOCABULARY GRID
+           ======================================== */
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--gutter);
+        }
+
+        .vocab-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--rule-color);
+            padding: var(--space-7);
+        }
+
+        .vocab-item__label {
+            margin-bottom: var(--space-5);
+        }
+
+        .vocab-item__title {
+            font-family: var(--font-display);
+            font-size: var(--text-xl);
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+        }
+
+        .vocab-item__desc {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            line-height: 1.6;
+            margin-bottom: var(--space-6);
+        }
+
+        .vocab-item__demo {
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--rule-color);
+        }
+
+        /* ========================================
+           DEMO COMPONENTS
+           ======================================== */
+
+        /* 1. Border Shift Card */
+        .demo-border-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--rule-color);
+            padding: var(--space-6);
+            width: 200px;
+            cursor: pointer;
+            transition: border-color 0.3s var(--ease-out-quart);
+        }
+
+        .demo-border-card:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .demo-border-card__title {
+            font-family: var(--font-display);
+            font-size: var(--text-base);
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+        }
+
+        .demo-border-card__meta {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+        }
+
+        /* 2. Typographic Hover */
+        .demo-type-link {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .demo-type-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-primary);
+            transition: width 0.4s var(--ease-out-expo);
+        }
+
+        .demo-type-link:hover::after {
+            width: 100%;
+        }
+
+        /* 3. Color State Transition */
+        .demo-color-state {
+            display: flex;
+            gap: var(--space-3);
+        }
+
+        .demo-color-state__item {
+            width: 48px;
+            height: 48px;
+            border: 1px solid var(--rule-color);
+            background: var(--bg-secondary);
+            cursor: pointer;
+            transition: background 0.3s var(--ease-out-quart), transform 0.2s var(--ease-out-quart);
+        }
+
+        .demo-color-state__item:hover {
+            background: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .demo-color-state__item.active {
+            background: var(--accent-terracotta);
+            border-color: var(--accent-terracotta);
+        }
+
+        /* 4. Structural Reveal */
+        .demo-reveal {
+            overflow: hidden;
+            width: 200px;
+        }
+
+        .demo-reveal__content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s var(--ease-out-expo);
+        }
+
+        .demo-reveal:hover .demo-reveal__content {
+            max-height: 200px;
+        }
+
+        .demo-reveal__trigger {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            color: var(--text-muted);
+            padding: var(--space-3) 0;
+            border-bottom: 1px solid var(--rule-color);
+            cursor: pointer;
+        }
+
+        .demo-reveal__body {
+            padding: var(--space-4) 0;
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+        }
+
+        /* 5. Arrow Slide CTA */
+        .demo-arrow-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-3);
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            color: var(--text-primary);
+            text-decoration: none;
+            cursor: pointer;
+            padding: var(--space-3) 0;
+        }
+
+        .demo-arrow-cta__arrow {
+            transition: transform 0.3s var(--ease-out-expo);
+        }
+
+        .demo-arrow-cta:hover .demo-arrow-cta__arrow {
+            transform: translateX(8px);
+        }
+
+        /* 6. Focus Ring Animation */
+        .demo-focus-ring {
+            padding: var(--space-4) var(--space-5);
+            border: 1px solid var(--rule-color);
+            background: var(--bg-secondary);
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            color: var(--text-primary);
+            outline: none;
+            transition: box-shadow 0.2s var(--ease-out-quart);
+        }
+
+        .demo-focus-ring:focus {
+            box-shadow: 0 0 0 3px rgba(196, 91, 63, 0.25);
+        }
+
+        @media (max-width: 768px) {
+            .vocab-grid {
+                grid-template-columns: 1fr;
+            }
+            .type-display {
+                font-size: var(--text-4xl);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero__content">
+                <div class="type-label hero__label">Animation Vocabulary</div>
+                <h1 class="type-display hero__title">Anti-Slop<br>Micro-Interactions</h1>
+                <p class="type-body-large hero__desc">
+                    Subtle state changes that feel intentional. No card zoom. No bounce. No elastic. Just purposeful transitions that respect the user's attention.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">The Vocabulary</div>
+            <div class="vocab-grid">
+
+                <div class="vocab-item">
+                    <div class="type-label vocab-item__label">01 — Border Shift</div>
+                    <h3 class="vocab-item__title">Border color transition on hover</h3>
+                    <p class="vocab-item__desc">
+                        Instead of lifting the card with a shadow, we change the border color. The element stays grounded but signals interactivity. Clean, flat, intentional.
+                    </p>
+                    <div class="vocab-item__demo">
+                        <div class="demo-border-card">
+                            <div class="demo-border-card__title">Project Name</div>
+                            <div class="demo-border-card__meta">2024 / Brand</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vocab-item">
+                    <div class="type-label vocab-item__label">02 — Typographic Underline</div>
+                    <h3 class="vocab-item__title">Animated rule line on links</h3>
+                    <p class="vocab-item__desc">
+                        A rule line that grows from left to right on hover. Uses `ease-out-expo` for a natural, non-bouncy feel. The underline IS the interaction.
+                    </p>
+                    <div class="vocab-item__demo">
+                        <a class="demo-type-link">View Project</a>
+                    </div>
+                </div>
+
+                <div class="vocab-item">
+                    <div class="type-label vocab-item__label">03 — Color State</div>
+                    <h3 class="vocab-item__title">Background fill on selection</h3>
+                    <p class="vocab-item__desc">
+                        Small color swatches that fill with the accent on hover. No scale, no shadow — just color. The `translateY(-2px)` is subtle enough to feel physical without being bouncy.
+                    </p>
+                    <div class="vocab-item__demo">
+                        <div class="demo-color-state">
+                            <div class="demo-color-state__item active"></div>
+                            <div class="demo-color-state__item"></div>
+                            <div class="demo-color-state__item"></div>
+                            <div class="demo-color-state__item"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vocab-item">
+                    <div class="type-label vocab-item__label">04 — Structural Reveal</div>
+                    <h3 class="vocab-item__title">Content reveal via max-height</h3>
+                    <p class="vocab-item__desc">
+                        Instead of a modal, reveal content inline. `max-height` transition with `overflow: hidden`. Progressive disclosure without breaking context.
+                    </p>
+                    <div class="vocab-item__demo">
+                        <div class="demo-reveal">
+                            <div class="demo-reveal__trigger">Hover to reveal details</div>
+                            <div class="demo-reveal__content">
+                                <div class="demo-reveal__body">
+                                    Project details, timeline, and deliverables appear inline. No modal. No overlay. Just content unfolding naturally.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vocab-item">
+                    <div class="type-label vocab-item__label">05 — Arrow Slide</div>
+                    <h3 class="vocab-item__title">Directional arrow on CTA</h3>
+                    <p class="vocab-item__desc">
+                        The arrow slides right on hover. `translateX(8px)` with `ease-out-expo`. Directional motion implies "forward." No bounce, no rotation — just movement with purpose.
+                    </p>
+                    <div class="vocab-item__demo">
+                        <a class="demo-arrow-cta">
+                            <span>Explore Work</span>
+                            <span class="demo-arrow-cta__arrow">→</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="vocab-item">
+                    <div class="type-label vocab-item__label">06 — Focus Ring</div>
+                    <h3 class="vocab-item__title">Accessible focus state</h3>
+                    <p class="vocab-item__desc">
+                        A warm terracotta glow on focus. Not the default blue browser outline — a custom ring that matches the palette. Accessibility with brand consistency.
+                    </p>
+                    <div class="vocab-item__demo">
+                        <input type="text" class="demo-focus-ring" placeholder="Click to focus..." />
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>
