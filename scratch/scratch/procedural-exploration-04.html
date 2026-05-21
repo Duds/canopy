@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procedural Exploration 04 — ASCII-Procedural Hybrid</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+
+            --bg-primary: #F5F3EF;
+            --bg-secondary: #FFFFFF;
+            --bg-tertiary: #EDE9E4;
+            --bg-dark: #1A1A1A;
+
+            --text-primary: #1A1A1A;
+            --text-secondary: #4A4A4A;
+            --text-muted: #8B8B8B;
+            --text-inverse: #FFFFFF;
+
+            --accent-primary: #C45B3F;
+            --accent-warm: #D4A574;
+            --accent-terracotta: #B8543D;
+            --accent-ochre: #C9A227;
+
+            --rule-color: rgba(26, 26, 26, 0.08);
+            --rule-thick: rgba(26, 26, 26, 0.15);
+
+            --text-xs: 11px;
+            --text-sm: 13px;
+            --text-base: 16px;
+            --text-lg: 19px;
+            --text-xl: 22px;
+            --text-2xl: 28px;
+            --text-3xl: 36px;
+            --text-4xl: 48px;
+            --text-5xl: 64px;
+            --text-6xl: 88px;
+
+            --leading-tight: 0.92;
+            --leading-snug: 1.1;
+            --leading-normal: 1.5;
+
+            --tracking-tight: -0.03em;
+            --tracking-wider: 0.1em;
+
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 24px;
+            --space-6: 32px;
+            --space-7: 48px;
+            --space-8: 64px;
+            --space-9: 96px;
+            --space-10: 128px;
+
+            --max-width: 1280px;
+            --gutter: 24px;
+
+            --radius-sm: 2px;
+            --radius-md: 4px;
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: var(--leading-normal);
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .type-display {
+            font-family: var(--font-display);
+            font-size: var(--text-5xl);
+            font-weight: 700;
+            line-height: var(--leading-tight);
+            letter-spacing: var(--tracking-tight);
+        }
+
+        .type-heading {
+            font-family: var(--font-display);
+            font-size: var(--text-3xl);
+            font-weight: 600;
+            line-height: var(--leading-snug);
+            letter-spacing: var(--tracking-tight);
+        }
+
+        .type-body-large {
+            font-family: var(--font-body);
+            font-size: var(--text-lg);
+            font-weight: 400;
+            line-height: var(--leading-normal);
+        }
+
+        .type-mono {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            line-height: 1.6;
+        }
+
+        .type-label {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            color: var(--text-muted);
+        }
+
+        .container {
+            width: 100%;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 var(--gutter);
+            position: relative;
+        }
+
+        .section {
+            padding: var(--space-9) 0;
+            position: relative;
+        }
+
+        .section-rule {
+            border-top: 1px solid var(--rule-thick);
+        }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            background: var(--bg-dark);
+        }
+
+        .hero__ascii {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+        }
+
+        .hero__ascii pre {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            line-height: 1;
+            color: var(--accent-primary);
+            opacity: 0.15;
+            white-space: pre;
+            overflow: hidden;
+            max-width: 100%;
+        }
+
+        .hero__content {
+            position: relative;
+            z-index: 1;
+            max-width: 640px;
+        }
+
+        .hero__label { margin-bottom: var(--space-5); color: var(--accent-warm); }
+        .hero__title { margin-bottom: var(--space-5); color: var(--text-inverse); }
+        .hero__desc { color: var(--text-muted); max-width: 520px; }
+
+        /* ASCII Canvas Section */
+        .ascii-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--gutter);
+        }
+
+        .ascii-card {
+            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--rule-color);
+            overflow: hidden;
+        }
+
+        .ascii-card--wide {
+            grid-column: span 8;
+        }
+
+        .ascii-card--narrow {
+            grid-column: span 4;
+        }
+
+        .ascii-card__canvas {
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            position: relative;
+            background: var(--bg-dark);
+            overflow: hidden;
+        }
+
+        .ascii-card__canvas pre {
+            position: absolute;
+            inset: 0;
+            font-family: var(--font-mono);
+            font-size: 8px;
+            line-height: 1;
+            color: var(--accent-primary);
+            white-space: pre;
+            overflow: hidden;
+            display: grid;
+            place-items: center;
+            padding: var(--space-4);
+        }
+
+        .ascii-card__content {
+            padding: var(--space-6);
+        }
+
+        .ascii-card__title {
+            font-family: var(--font-display);
+            font-size: var(--text-xl);
+            font-weight: 600;
+            margin-bottom: var(--space-3);
+        }
+
+        .ascii-card__desc {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            line-height: 1.6;
+        }
+
+        /* Type specimen with ASCII */
+        .type-specimen {
+            background: var(--bg-secondary);
+            border: 1px solid var(--rule-color);
+            padding: var(--space-8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .type-specimen__ascii {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-family: var(--font-mono);
+            font-size: 6px;
+            line-height: 1;
+            color: var(--accent-primary);
+            opacity: 0.08;
+            white-space: pre;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .type-specimen__content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .type-specimen__glyph {
+            font-family: var(--font-display);
+            font-size: var(--text-6xl);
+            font-weight: 700;
+            line-height: var(--leading-tight);
+            color: var(--text-primary);
+            margin-bottom: var(--space-5);
+        }
+
+        .type-specimen__sample {
+            font-family: var(--font-body);
+            font-size: var(--text-lg);
+            line-height: 1.6;
+            color: var(--text-secondary);
+            max-width: 600px;
+        }
+
+        @media (max-width: 768px) {
+            .ascii-card--wide,
+            .ascii-card--narrow {
+                grid-column: span 12;
+            }
+            .type-display { font-size: var(--text-4xl); }
+            .hero__ascii pre { font-size: 6px; }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="hero__ascii" id="heroAscii"></div>
+        <div class="container">
+            <div class="hero__content">
+                <div class="type-label hero__label">Procedural Exploration 04</div>
+                <h1 class="type-display hero__title">ASCII<br>Procedural</h1>
+                <p class="type-body-large hero__desc">
+                    Characters as pixels. The density of each glyph maps to brightness, creating a dot-matrix made of type. A bridge between tech precision and warm editorial craft.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">As Card Media</div>
+            <div class="ascii-grid">
+                <div class="ascii-card ascii-card--wide">
+                    <div class="ascii-card__canvas" id="asciiCanvas1"></div>
+                    <div class="ascii-card__content">
+                        <div class="type-label" style="margin-bottom: var(--space-3);">Featured Project</div>
+                        <h3 class="ascii-card__title">Neural Interface Brand</h3>
+                        <p class="ascii-card__desc">ASCII density maps encode data complexity. Each character is a pixel in a procedural image.</p>
+                    </div>
+                </div>
+                <div class="ascii-card ascii-card--narrow">
+                    <div class="ascii-card__canvas" id="asciiCanvas2"></div>
+                    <div class="ascii-card__content">
+                        <div class="type-label" style="margin-bottom: var(--space-3);">Case Study</div>
+                        <h3 class="ascii-card__title">Data Visualization</h3>
+                        <p class="ascii-card__desc">Warm terracotta characters on dark. The ASCII creates texture without clutter.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">Type Specimen with ASCII Texture</div>
+            <div class="type-specimen">
+                <div class="type-specimen__ascii" id="typeAscii"></div>
+                <div class="type-specimen__content">
+                    <div class="type-specimen__glyph">Aa</div>
+                    <p class="type-specimen__sample">
+                        Syne Display + Space Grotesk + Space Mono. A typographic system built for warm editorial minimalism. The ASCII texture in the background is generated from the same noise field that drives the dot-matrix and flow-field treatments — every visual element shares a single procedural source.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // ========================================
+        // ASCII ART GENERATOR
+        // ========================================
+
+        const ASCII_CHARS = ' .:-=+*#%@';
+        const PALETTE = {
+            primary: [196, 91, 63],
+            warm: [212, 165, 116],
+            ochre: [201, 162, 39]
+        };
+
+        function generateAsciiField(width, height, type = 'noise') {
+            const chars = [];
+            for (let y = 0; y < height; y++) {
+                let row = '';
+                for (let x = 0; x < width; x++) {
+                    let brightness = 0;
+
+                    if (type === 'noise') {
+                        const nx = x * 0.1;
+                        const ny = y * 0.1;
+                        brightness = (Math.sin(nx) * Math.cos(ny) + 1) / 2;
+                    } else if (type === 'gradient') {
+                        const dx = x - width / 2;
+                        const dy = y - height / 2;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        brightness = 1 - Math.min(dist / (Math.max(width, height) * 0.6), 1);
+                    } else if (type === 'wave') {
+                        const wave = Math.sin(x * 0.15) * Math.cos(y * 0.1);
+                        brightness = (wave + 1) / 2;
+                    } else if (type === 'random') {
+                        brightness = Math.random();
+                    }
+
+                    const charIndex = Math.floor(brightness * (ASCII_CHARS.length - 1));
+                    row += ASCII_CHARS[Math.min(charIndex, ASCII_CHARS.length - 1)];
+                }
+                chars.push(row);
+            }
+            return chars.join('\n');
+        }
+
+        function createAsciiElement(container, config) {
+            const {
+                width = 80,
+                height = 40,
+                type = 'noise',
+                color = 'primary',
+                animate = false
+            } = config;
+
+            const pre = document.createElement('pre');
+            pre.style.color = `rgb(${PALETTE[color].join(',')})`;
+            pre.style.opacity = '0.6';
+            container.appendChild(pre);
+
+            function update() {
+                const ascii = generateAsciiField(width, height, type);
+                pre.textContent = ascii;
+            }
+
+            update();
+
+            if (animate) {
+                let time = 0;
+                function loop() {
+                    time += 1;
+                    // Subtle shift by regenerating with offset
+                    const originalType = type;
+                    const ascii = generateAsciiField(width, height, originalType);
+                    pre.textContent = ascii;
+                    setTimeout(() => requestAnimationFrame(loop), 200);
+                }
+                loop();
+            }
+        }
+
+        // ========================================
+        // INITIALIZE
+        // ========================================
+        function init() {
+            const heroAscii = document.getElementById('heroAscii');
+            if (heroAscii) {
+                createAsciiElement(heroAscii, {
+                    width: 120,
+                    height: 60,
+                    type: 'noise',
+                    color: 'primary',
+                    animate: true
+                });
+            }
+
+            const asciiCanvas1 = document.getElementById('asciiCanvas1');
+            if (asciiCanvas1) {
+                createAsciiElement(asciiCanvas1, {
+                    width: 100,
+                    height: 50,
+                    type: 'wave',
+                    color: 'warm'
+                });
+            }
+
+            const asciiCanvas2 = document.getElementById('asciiCanvas2');
+            if (asciiCanvas2) {
+                createAsciiElement(asciiCanvas2, {
+                    width: 60,
+                    height: 40,
+                    type: 'gradient',
+                    color: 'ochre'
+                });
+            }
+
+            const typeAscii = document.getElementById('typeAscii');
+            if (typeAscii) {
+                createAsciiElement(typeAscii, {
+                    width: 80,
+                    height: 30,
+                    type: 'random',
+                    color: 'primary'
+                });
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+
+</body>
+</html>

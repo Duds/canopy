@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procedural Exploration 02 — Flow-Field Line Art</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+
+            --bg-primary: #F5F3EF;
+            --bg-secondary: #FFFFFF;
+            --bg-tertiary: #EDE9E4;
+
+            --text-primary: #1A1A1A;
+            --text-secondary: #4A4A4A;
+            --text-muted: #8B8B8B;
+
+            --accent-primary: #C45B3F;
+            --accent-warm: #D4A574;
+            --accent-terracotta: #B8543D;
+            --accent-ochre: #C9A227;
+
+            --rule-color: rgba(26, 26, 26, 0.08);
+            --rule-thick: rgba(26, 26, 26, 0.15);
+
+            --text-xs: 11px;
+            --text-sm: 13px;
+            --text-base: 16px;
+            --text-lg: 19px;
+            --text-xl: 22px;
+            --text-2xl: 28px;
+            --text-3xl: 36px;
+            --text-4xl: 48px;
+            --text-5xl: 64px;
+
+            --leading-tight: 0.92;
+            --leading-snug: 1.1;
+            --leading-normal: 1.5;
+
+            --tracking-tight: -0.03em;
+            --tracking-wider: 0.1em;
+
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 24px;
+            --space-6: 32px;
+            --space-7: 48px;
+            --space-8: 64px;
+            --space-9: 96px;
+            --space-10: 128px;
+
+            --max-width: 1280px;
+            --gutter: 24px;
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: var(--leading-normal);
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .type-display {
+            font-family: var(--font-display);
+            font-size: var(--text-5xl);
+            font-weight: 700;
+            line-height: var(--leading-tight);
+            letter-spacing: var(--tracking-tight);
+        }
+
+        .type-heading {
+            font-family: var(--font-display);
+            font-size: var(--text-3xl);
+            font-weight: 600;
+            line-height: var(--leading-snug);
+            letter-spacing: var(--tracking-tight);
+        }
+
+        .type-body-large {
+            font-family: var(--font-body);
+            font-size: var(--text-lg);
+            font-weight: 400;
+            line-height: var(--leading-normal);
+        }
+
+        .type-label {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            color: var(--text-muted);
+        }
+
+        .container {
+            width: 100%;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 var(--gutter);
+            position: relative;
+        }
+
+        .section {
+            padding: var(--space-9) 0;
+            position: relative;
+        }
+
+        .section-rule {
+            border-top: 1px solid var(--rule-thick);
+        }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .hero__canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .hero__content {
+            position: relative;
+            z-index: 1;
+            max-width: 640px;
+        }
+
+        .hero__label { margin-bottom: var(--space-5); }
+        .hero__title { margin-bottom: var(--space-5); }
+        .hero__desc { color: var(--text-secondary); max-width: 520px; }
+
+        /* Showcase Grid */
+        .showcase {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--gutter);
+        }
+
+        .showcase-item {
+            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--rule-color);
+            overflow: hidden;
+        }
+
+        .showcase-item--large { grid-column: span 8; }
+        .showcase-item--small { grid-column: span 4; }
+
+        .showcase-item__canvas {
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            position: relative;
+        }
+
+        .showcase-item__canvas canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .showcase-item__content {
+            padding: var(--space-5);
+            border-top: 1px solid var(--rule-color);
+        }
+
+        .showcase-item__title {
+            font-family: var(--font-display);
+            font-size: var(--text-lg);
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+        }
+
+        .showcase-item__desc {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            line-height: 1.6;
+        }
+
+        /* Full-bleed treatment */
+        .full-bleed {
+            position: relative;
+            height: 70vh;
+            overflow: hidden;
+            background: var(--bg-dark);
+        }
+
+        .full-bleed canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .full-bleed__caption {
+            position: absolute;
+            bottom: var(--space-6);
+            left: var(--space-6);
+            z-index: 1;
+            color: var(--bg-primary);
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .showcase-item--large,
+            .showcase-item--small { grid-column: span 12; }
+            .type-display { font-size: var(--text-4xl); }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <canvas class="hero__canvas" id="heroCanvas"></canvas>
+        <div class="container">
+            <div class="hero__content">
+                <div class="type-label hero__label">Procedural Exploration 02</div>
+                <h1 class="type-display hero__title">Flow-Field<br>Line Art</h1>
+                <p class="type-body-large hero__desc">
+                    Lines follow invisible currents of noise. Each stroke is a particle tracing a vector field. The result is organic, warm, and entirely procedural — no illustration, no stock, no hand-drawing.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">As Project Thumbnails</div>
+            <div class="showcase">
+                <div class="showcase-item showcase-item--large">
+                    <div class="showcase-item__canvas">
+                        <canvas id="showcase1"></canvas>
+                    </div>
+                    <div class="showcase-item__content">
+                        <div class="type-label" style="margin-bottom: var(--space-2);">Brand Identity</div>
+                        <h3 class="showcase-item__title">Meridian Finance</h3>
+                        <p class="showcase-item__desc">Flow-field generative textures as the primary brand asset. Warm terracotta lines on cream.</p>
+                    </div>
+                </div>
+                <div class="showcase-item showcase-item--small">
+                    <div class="showcase-item__canvas">
+                        <canvas id="showcase2"></canvas>
+                    </div>
+                    <div class="showcase-item__content">
+                        <div class="type-label" style="margin-bottom: var(--space-2);">Web Experience</div>
+                        <h3 class="showcase-item__title">Soil & Seed</h3>
+                        <p class="showcase-item__desc">Organic line work for an eco-commerce platform.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="full-bleed">
+        <canvas id="fullBleed"></canvas>
+        <div class="full-bleed__caption">Interactive Flow Field — Cursor Influences Current</div>
+    </section>
+
+    <script>
+        // ========================================
+        // SIMPLEX NOISE (simplified implementation)
+        // ========================================
+        const Simplex = (function() {
+            const F2 = 0.5 * (Math.sqrt(3) - 1);
+            const G2 = (3 - Math.sqrt(3)) / 6;
+            const F3 = 1 / 3;
+            const G3 = 1 / 6;
+            const P = new Uint8Array(256);
+            for (let i = 0; i < 256; i++) P[i] = i;
+            for (let i = 255; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [P[i], P[j]] = [P[j], P[i]];
+            }
+            const perm = new Uint8Array(512);
+            const permMod12 = new Uint8Array(512);
+            for (let i = 0; i < 512; i++) {
+                perm[i] = P[i & 255];
+                permMod12[i] = perm[i] % 12;
+            }
+            const grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
+            return {
+                noise2D: function(xin, yin) {
+                    let n0, n1, n2;
+                    const s = (xin + yin) * F2;
+                    const i = Math.floor(xin + s);
+                    const j = Math.floor(yin + s);
+                    const t = (i + j) * G2;
+                    const X0 = i - t;
+                    const Y0 = j - t;
+                    const x0 = xin - X0;
+                    const y0 = yin - Y0;
+                    const i1 = x0 > y0 ? 1 : 0;
+                    const j1 = x0 > y0 ? 0 : 1;
+                    const x1 = x0 - i1 + G2;
+                    const y1 = y0 - j1 + G2;
+                    const x2 = x0 - 1 + 2 * G2;
+                    const y2 = y0 - 1 + 2 * G2;
+                    const ii = i & 255;
+                    const jj = j & 255;
+                    let t0 = 0.5 - x0 * x0 - y0 * y0;
+                    if (t0 < 0) n0 = 0;
+                    else { t0 *= t0; n0 = t0 * t0 * (grad3[permMod12[ii + perm[jj]]][0] * x0 + grad3[permMod12[ii + perm[jj]]][1] * y0); }
+                    let t1 = 0.5 - x1 * x1 - y1 * y1;
+                    if (t1 < 0) n1 = 0;
+                    else { t1 *= t1; n1 = t1 * t1 * (grad3[permMod12[ii + i1 + perm[jj + j1]]][0] * x1 + grad3[permMod12[ii + i1 + perm[jj + j1]]][1] * y1); }
+                    let t2 = 0.5 - x2 * x2 - y2 * y2;
+                    if (t2 < 0) n2 = 0;
+                    else { t2 *= t2; n2 = t2 * t2 * (grad3[permMod12[ii + 1 + perm[jj + 1]]][0] * x2 + grad3[permMod12[ii + 1 + perm[jj + 1]]][1] * y2); }
+                    return 70 * (n0 + n1 + n2);
+                }
+            };
+        })();
+
+        // ========================================
+        // FLOW FIELD GENERATOR
+        // ========================================
+        const PALETTE = {
+            bg: [245, 243, 239],
+            primary: [196, 91, 63],
+            warm: [212, 165, 116],
+            dark: [26, 26, 26],
+            ochre: [201, 162, 39]
+        };
+
+        function createFlowField(canvas, config) {
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const w = rect.width;
+            const h = rect.height;
+            const {
+                scale = 0.003,
+                stepSize = 2,
+                numSteps = 80,
+                lineWidth = 0.8,
+                opacity = 0.6,
+                animate = false,
+                interactive = false,
+                colorMix = 0.5,
+                bgColor = PALETTE.bg
+            } = config;
+
+            let time = 0;
+            let mouseX = w / 2;
+            let mouseY = h / 2;
+
+            if (interactive) {
+                canvas.addEventListener('mousemove', (e) => {
+                    const r = canvas.getBoundingClientRect();
+                    mouseX = e.clientX - r.left;
+                    mouseY = e.clientY - r.top;
+                });
+            }
+
+            function getAngle(x, y) {
+                const n1 = Simplex.noise2D(x * scale, y * scale + time * 0.0003);
+                const n2 = Simplex.noise2D(x * scale * 2 + 100, y * scale * 2 + time * 0.0002);
+                let angle = n1 * Math.PI * 2;
+
+                if (interactive) {
+                    const dx = mouseX - x;
+                    const dy = mouseY - y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const maxDist = 200;
+                    if (dist < maxDist) {
+                        const influence = (1 - dist / maxDist) * 0.5;
+                        const mouseAngle = Math.atan2(dy, dx);
+                        angle = angle * (1 - influence) + mouseAngle * influence;
+                    }
+                }
+
+                return angle;
+            }
+
+            function draw() {
+                ctx.fillStyle = `rgb(${bgColor.join(',')})`;
+                ctx.fillRect(0, 0, w, h);
+
+                const spacing = 12;
+                const cols = Math.floor(w / spacing);
+                const rows = Math.floor(h / spacing);
+
+                for (let y = 0; y < rows; y++) {
+                    for (let x = 0; x < cols; x++) {
+                        if (Math.random() > 0.4) continue;
+
+                        const px = x * spacing + spacing / 2;
+                        const py = y * spacing + spacing / 2;
+
+                        ctx.beginPath();
+                        let cx = px;
+                        let cy = py;
+                        ctx.moveTo(cx, cy);
+
+                        for (let s = 0; s < numSteps; s++) {
+                            const angle = getAngle(cx, cy);
+                            cx += Math.cos(angle) * stepSize;
+                            cy += Math.sin(angle) * stepSize;
+                            ctx.lineTo(cx, cy);
+                        }
+
+                        const mix = (x / cols + y / rows) / 2;
+                        const r = Math.round(PALETTE.primary[0] * mix + PALETTE.warm[0] * (1 - mix));
+                        const g = Math.round(PALETTE.primary[1] * mix + PALETTE.warm[1] * (1 - mix));
+                        const b = Math.round(PALETTE.primary[2] * mix + PALETTE.warm[2] * (1 - mix));
+
+                        ctx.strokeStyle = `rgba(${r},${g},${b},${opacity})`;
+                        ctx.lineWidth = lineWidth;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            draw();
+
+            if (animate) {
+                function loop() {
+                    time += 1;
+                    draw();
+                    requestAnimationFrame(loop);
+                }
+                loop();
+            }
+        }
+
+        // ========================================
+        // DARK FLOW FIELD (for full-bleed)
+        // ========================================
+        function createDarkFlowField(canvas) {
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const w = rect.width;
+            const h = rect.height;
+
+            let time = 0;
+            let mouseX = w / 2;
+            let mouseY = h / 2;
+
+            canvas.addEventListener('mousemove', (e) => {
+                const r = canvas.getBoundingClientRect();
+                mouseX = e.clientX - r.left;
+                mouseY = e.clientY - r.top;
+            });
+
+            function getAngle(x, y) {
+                const n1 = Simplex.noise2D(x * 0.002, y * 0.002 + time * 0.0003);
+                const n2 = Simplex.noise2D(x * 0.004 + 50, y * 0.004 + time * 0.0002);
+                let angle = n1 * Math.PI * 2 + n2 * 0.5;
+
+                const dx = mouseX - x;
+                const dy = mouseY - y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const maxDist = 250;
+                if (dist < maxDist) {
+                    const influence = (1 - dist / maxDist) * 0.6;
+                    const mouseAngle = Math.atan2(dy, dx);
+                    angle = angle * (1 - influence) + mouseAngle * influence;
+                }
+
+                return angle;
+            }
+
+            function draw() {
+                ctx.fillStyle = '#1A1A1A';
+                ctx.fillRect(0, 0, w, h);
+
+                const spacing = 10;
+                const cols = Math.floor(w / spacing);
+                const rows = Math.floor(h / spacing);
+
+                for (let y = 0; y < rows; y++) {
+                    for (let x = 0; x < cols; x++) {
+                        if (Math.random() > 0.35) continue;
+
+                        const px = x * spacing + spacing / 2;
+                        const py = y * spacing + spacing / 2;
+
+                        ctx.beginPath();
+                        let cx = px;
+                        let cy = py;
+                        ctx.moveTo(cx, cy);
+
+                        for (let s = 0; s < 100; s++) {
+                            const angle = getAngle(cx, cy);
+                            cx += Math.cos(angle) * 2;
+                            cy += Math.sin(angle) * 2;
+                            ctx.lineTo(cx, cy);
+                        }
+
+                        const distFromCenter = Math.sqrt((px - w/2)**2 + (py - h/2)**2);
+                        const maxDist = Math.sqrt((w/2)**2 + (h/2)**2);
+                        const t = distFromCenter / maxDist;
+
+                        const colors = [
+                            [196, 91, 63],
+                            [212, 165, 116],
+                            [201, 162, 39],
+                            [245, 243, 239]
+                        ];
+                        const idx = Math.floor(t * (colors.length - 1));
+                        const c1 = colors[Math.min(idx, colors.length - 1)];
+                        const c2 = colors[Math.min(idx + 1, colors.length - 1)];
+                        const mix = t * (colors.length - 1) - idx;
+                        const r = Math.round(c1[0] * (1 - mix) + c2[0] * mix);
+                        const g = Math.round(c1[1] * (1 - mix) + c2[1] * mix);
+                        const b = Math.round(c1[2] * (1 - mix) + c2[2] * mix);
+
+                        ctx.strokeStyle = `rgba(${r},${g},${b},0.5)`;
+                        ctx.lineWidth = 0.6;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            function loop() {
+                time += 1;
+                draw();
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        // ========================================
+        // INITIALIZE
+        // ========================================
+        function init() {
+            const heroCanvas = document.getElementById('heroCanvas');
+            if (heroCanvas) createFlowField(heroCanvas, { scale: 0.004, stepSize: 2.5, numSteps: 60, lineWidth: 1, opacity: 0.5, animate: true });
+
+            const showcase1 = document.getElementById('showcase1');
+            if (showcase1) createFlowField(showcase1, { scale: 0.005, stepSize: 2, numSteps: 50, lineWidth: 0.8, opacity: 0.55 });
+
+            const showcase2 = document.getElementById('showcase2');
+            if (showcase2) createFlowField(showcase2, { scale: 0.006, stepSize: 1.8, numSteps: 70, lineWidth: 0.6, opacity: 0.4, colorMix: 0.8 });
+
+            const fullBleed = document.getElementById('fullBleed');
+            if (fullBleed) createDarkFlowField(fullBleed);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+
+</body>
+</html>

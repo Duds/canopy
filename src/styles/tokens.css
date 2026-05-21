@@ -1,0 +1,27 @@
+/* Design tokens — update here for brand rebrand; Tailwind reads via tailwind.config.mjs */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap');
+
+:root {
+  /* Neutral foundation */
+  --color-surface:   oklch(99% 0.008 0);
+  --color-text:      oklch(18% 0.015 270);
+  --color-text-secondary: oklch(50% 0.06 270);
+  --color-muted:     oklch(65% 0.05 270);
+
+  /* Primary accent — warm ochre/rust, distinctive and grounded */
+  --color-accent:    oklch(48% 0.22 25);
+
+  /* Semantic colours */
+  --color-success:   oklch(65% 0.20 142);
+  --color-warning:   oklch(75% 0.18 70);
+  --color-error:     oklch(55% 0.22 10);
+  --color-info:      oklch(60% 0.15 250);
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Spacing scale — augments Tailwind defaults */
+  --space-section: 6rem;
+}

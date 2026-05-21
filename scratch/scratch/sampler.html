@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout Sampler</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-warm: #F5F3EF;
+            --grid-color: rgba(0, 0, 0, 0.08);
+            --grid-gutter: 24px;
+            --grid-columns: 12;
+            --max-width: 1400px;
+            --section-padding: 120px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-warm);
+            position: relative;
+        }
+
+        body.hide-labels .block::after,
+        body.hide-labels .block::before {
+            display: none;
+        }
+
+        body.hide-labels .boundary-tag {
+            display: none;
+        }
+
+        /* Grid Toggle Controls */
+        .grid-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .grid-controls label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .grid-controls input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #7CFC00;
+        }
+
+        /* Grid Overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: var(--max-width);
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+            display: none;
+            padding: 0 var(--grid-gutter);
+        }
+
+        .grid-overlay.active {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-columns), 1fr);
+            gap: var(--grid-gutter);
+        }
+
+        .grid-column {
+            background: var(--grid-color);
+            height: 100%;
+            position: relative;
+        }
+
+        .grid-column::before {
+            content: attr(data-col);
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: rgba(0,0,0,0.4);
+            font-family: monospace;
+        }
+
+        /* Container */
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 var(--grid-gutter);
+        }
+
+        /* Full Bleed Container */
+        .container-full {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* Breakout - extends beyond container */
+        .breakout {
+            width: calc(100% + 80px);
+            margin-left: -40px;
+        }
+
+        .breakout-left {
+            width: calc(100% + 40px);
+            margin-left: -40px;
+        }
+
+        .breakout-right {
+            width: calc(100% + 40px);
+            margin-right: -40px;
+        }
+
+        /* Section Base */
+        section {
+            position: relative;
+        }
+
+        .section-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(0,0,0,0.4);
+            font-family: monospace;
+            z-index: 10;
+        }
+
+        /* Hover Label System */
+        .block {
+            position: relative;
+            cursor: help;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            z-index: 50;
+        }
+
+        /* Full bleed elements need to preserve their centering transform */
+        .full-bleed-image:hover {
+            transform: translateX(-50%) translateY(-2px);
+        }
+
+        .block::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            background: #1a1a1a;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 100;
+            font-family: monospace;
+            letter-spacing: 0.02em;
+        }
+
+        .block::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-2px);
+            border: 6px solid transparent;
+            border-top-color: #1a1a1a;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+
+        .block:hover::after,
+        .block:hover::before {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Boundary Indicator */
+        .boundary-tag {
+            position: absolute;
+            top: -25px;
+            right: 0;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #FF6B6B;
+            font-family: monospace;
+            background: rgba(255, 107, 107, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+
+        .block:hover .boundary-tag {
+            opacity: 1;
+        }
+
+        /* Header/Nav */
+        .header {
+            padding: 24px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-warm);
+        }
+
+        .header-inner {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-columns), 1fr);
+            gap: var(--grid-gutter);
+            align-items: center;
+        }
+
+        .logo-block {
+            grid-column: span 3;
+        }
+
+        .nav-block {
+            grid-column: span 7;
+        }
+
+        .cta-block {
+            grid-column: span 2;
+        }
+
+        .logo-block {
+            height: 40px;
+            background: #1a1a1a;
+            border-radius: 4px;
+        }
+
+        .nav-block {
+            height: 40px;
+            background: #D4D0C8;
+            border-radius: 4px;
+        }
+
+        .cta-block {
+            height: 40px;
+            background: #FF6B6B;
+            border-radius: 4px;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: var(--section-padding) 0;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-columns), 1fr);
+            gap: var(--grid-gutter);
+            align-items: center;
+        }
+
+        .hero-content {
+            grid-column: 1 / 7;
+        }
+
+        .hero-visual {
+            grid-column: 7 / 13;
+        }
+
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        .hero-headline {
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+        }
+
+        .hero-subhead {
+            height: 80px;
+            background: #A8A4B0;
+            border-radius: 4px;
+            width: 80%;
+        }
+
+        .hero-cta-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .hero-cta-primary {
+            height: 56px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            flex: 0 0 160px;
+        }
+
+        .hero-cta-secondary {
+            height: 56px;
+            background: transparent;
+            border: 2px solid #1a1a1a;
+            border-radius: 4px;
+            flex: 0 0 160px;
+        }
+
+        .hero-visual {
+            height: 500px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 12px;
+        }
+
+        /* Content Section A - Asymmetric Grid */
+        .content-a {
+            padding: var(--section-padding) 0;
+            background: #fff;
+        }
+
+        .content-a-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--grid-gutter);
+        }
+
+        .content-a-text {
+            grid-column: 1 / 6;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .content-a-heading {
+            height: 120px;
+            background: #4ECDC4;
+            border-radius: 4px;
+        }
+
+        .content-a-body {
+            height: 200px;
+            background: #D4D0C8;
+            border-radius: 4px;
+        }
+
+        .content-a-media {
+            grid-column: 7 / 13;
+            height: 400px;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            border-radius: 8px;
+        }
+
+        .content-a-cards {
+            grid-column: 1 / 13;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--grid-gutter);
+            margin-top: 64px;
+        }
+
+        .content-a-card {
+            height: 280px;
+            background: #96CEB4;
+            border-radius: 8px;
+        }
+
+        .content-a-card:nth-child(2) {
+            background: #FFEAA7;
+        }
+
+        .content-a-card:nth-child(3) {
+            background: #DDA0DD;
+        }
+
+        /* Content Section B - Editorial Layout with Breakouts */
+        .content-b {
+            padding: var(--section-padding) 0;
+            overflow: visible;
+        }
+
+        .content-b-header {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-columns), 1fr);
+            gap: var(--grid-gutter);
+            margin-bottom: 64px;
+            align-items: end;
+        }
+
+        .content-b-title {
+            grid-column: span 8;
+        }
+
+        .content-b-link {
+            grid-column: span 4;
+        }
+
+        .content-b-title {
+            height: 100px;
+            background: #E17055;
+            border-radius: 4px;
+        }
+
+        .content-b-link {
+            height: 40px;
+            background: #74B9FF;
+            border-radius: 4px;
+            justify-self: end;
+            width: 140px;
+        }
+
+        .content-b-grid {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-columns), 1fr);
+            gap: var(--grid-gutter);
+        }
+
+        .content-b-item {
+            grid-column: span 6;
+        }
+
+        .content-b-item {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .content-b-item:nth-child(even) {
+            margin-top: 80px;
+        }
+
+        .content-b-image {
+            height: 400px;
+            background: #A29BFE;
+            border-radius: 8px;
+        }
+
+        .content-b-item:nth-child(2) .content-b-image {
+            background: #FD79A8;
+        }
+
+        .content-b-item:nth-child(3) .content-b-image {
+            background: #FDCB6E;
+        }
+
+        .content-b-item:nth-child(4) .content-b-image {
+            background: #6C5CE7;
+        }
+
+        .content-b-meta {
+            height: 60px;
+            background: #D4D0C8;
+            border-radius: 4px;
+        }
+
+        /* Content Section C - Full Bleed & Breakout Examples */
+        .content-c {
+            padding: var(--section-padding) 0;
+            background: #fff;
+            overflow: visible;
+        }
+
+        .content-c-header {
+            margin-bottom: 64px;
+        }
+
+        .content-c-heading {
+            height: 80px;
+            background: #00B894;
+            border-radius: 4px;
+            max-width: 600px;
+        }
+
+        /* Full Bleed Example */
+        .full-bleed-demo {
+            margin: 64px 0;
+            position: relative;
+        }
+
+        .full-bleed-image {
+            height: 500px;
+            background: linear-gradient(135deg, #2d3436 0%, #000000 100%);
+            border-radius: 0;
+            width: 100vw;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Breakout Examples */
+        .breakout-demo {
+            margin: 64px 0;
+        }
+
+        .breakout-heading {
+            height: 120px;
+            background: #0984E3;
+            border-radius: 4px;
+            margin-bottom: 40px;
+        }
+
+        .breakout-text {
+            height: 150px;
+            background: #74B9FF;
+            border-radius: 4px;
+        }
+
+        /* Asymmetric Breakout */
+        .asymmetric-breakout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--grid-gutter);
+            margin: 64px 0;
+            align-items: center;
+        }
+
+        .asymmetric-text {
+            height: 300px;
+            background: #A29BFE;
+            border-radius: 4px;
+        }
+
+        .asymmetric-image {
+            height: 400px;
+            background: linear-gradient(135deg, #fd79a8 0%, #e17055 100%);
+            border-radius: 8px;
+            width: calc(100% + 100px);
+            margin-right: -100px;
+        }
+
+        /* Edge to Edge Cards */
+        .edge-cards-container {
+            margin: 64px 0;
+            padding: 40px 0;
+            background: #F5F3EF;
+            width: 100vw;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .edge-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--grid-gutter);
+            padding: 0 var(--grid-gutter);
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .edge-card {
+            height: 250px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .edge-card:nth-child(2) { background: #FFEAA7; }
+        .edge-card:nth-child(3) { background: #DDA0DD; }
+        .edge-card:nth-child(4) { background: #96CEB4; }
+
+        /* Footer */
+        .footer {
+            padding: var(--section-padding) 0 40px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(var(--grid-columns), 1fr);
+            gap: var(--grid-gutter);
+        }
+
+        .footer-brand {
+            grid-column: span 6;
+        }
+
+        .footer-col {
+            grid-column: span 2;
+        }
+
+        .footer-brand {
+            height: 150px;
+            background: #2d2d2d;
+            border-radius: 4px;
+        }
+
+        .footer-col {
+            height: 200px;
+            background: #2d2d2d;
+            border-radius: 4px;
+        }
+
+        .footer-bottom {
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 1px solid #333;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--grid-gutter);
+        }
+
+        .footer-copyright {
+            height: 30px;
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .footer-social {
+            height: 30px;
+            background: #333;
+            border-radius: 4px;
+            justify-self: end;
+            width: 200px;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 900px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-visual {
+                height: 300px;
+                order: -1;
+            }
+
+            .content-a-text {
+                grid-column: 1 / 13;
+            }
+
+            .content-a-media {
+                grid-column: 1 / 13;
+                margin-top: 40px;
+            }
+
+            .content-a-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .content-b-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content-b-item:nth-child(even) {
+                margin-top: 0;
+            }
+
+            .asymmetric-breakout {
+                grid-template-columns: 1fr;
+            }
+
+            .asymmetric-image {
+                width: 100%;
+                margin-right: 0;
+            }
+
+            .edge-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .hero-content,
+            .hero-visual {
+                grid-column: auto;
+            }
+
+            .content-b-item {
+                grid-column: auto;
+            }
+
+            .header-inner {
+                grid-template-columns: 120px 1fr;
+            }
+
+            .logo-block,
+            .nav-block,
+            .cta-block {
+                grid-column: auto;
+            }
+
+            .nav-block {
+                display: none;
+            }
+
+            .breakout,
+            .breakout-left,
+            .breakout-right {
+                width: 100%;
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Grid Overlay -->
+    <div class="grid-overlay" id="gridOverlay">
+        <div class="grid-column" data-col="1"></div>
+        <div class="grid-column" data-col="2"></div>
+        <div class="grid-column" data-col="3"></div>
+        <div class="grid-column" data-col="4"></div>
+        <div class="grid-column" data-col="5"></div>
+        <div class="grid-column" data-col="6"></div>
+        <div class="grid-column" data-col="7"></div>
+        <div class="grid-column" data-col="8"></div>
+        <div class="grid-column" data-col="9"></div>
+        <div class="grid-column" data-col="10"></div>
+        <div class="grid-column" data-col="11"></div>
+        <div class="grid-column" data-col="12"></div>
+    </div>
+
+    <!-- Grid Controls -->
+    <div class="grid-controls">
+        <label>
+            <input type="checkbox" id="gridToggle">
+            <span>Show 12-Column Grid</span>
+        </label>
+        <label>
+            <input type="checkbox" id="labelToggle" checked>
+            <span>Show Hover Labels</span>
+        </label>
+    </div>
+
+    <!-- Header/Nav -->
+    <header class="header">
+        <span class="section-label">Header / Nav</span>
+        <div class="container">
+            <div class="header-inner">
+                <div class="block logo-block" data-label="Logo (SVG or Text)"></div>
+                <div class="block nav-block" data-label="Primary Navigation"></div>
+                <div class="block cta-block" data-label="CTA Button"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <span class="section-label">Hero</span>
+        <div class="container">
+            <div class="hero-grid">
+                <div class="hero-content">
+                    <div class="block hero-headline" data-label="H1 - Main Headline (60-80px)"></div>
+                    <div class="block hero-subhead" data-label="Subhead / Description (18-20px)"></div>
+                    <div class="hero-cta-row">
+                        <div class="block hero-cta-primary" data-label="Primary CTA"></div>
+                        <div class="block hero-cta-secondary" data-label="Secondary CTA"></div>
+                    </div>
+                </div>
+                <div class="block hero-visual" data-label="Hero Visual / Illustration / Image"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content A - Asymmetric Grid -->
+    <section class="content-a">
+        <span class="section-label">Content A</span>
+        <div class="container">
+            <div class="content-a-grid">
+                <div class="content-a-text">
+                    <div class="block content-a-heading" data-label="Section Heading H2"></div>
+                    <div class="block content-a-body" data-label="Body Text + Bullet Points"></div>
+                </div>
+                <div class="block content-a-media" data-label="Featured Image / Video"></div>
+                <div class="content-a-cards">
+                    <div class="block content-a-card" data-label="Service Card 1"></div>
+                    <div class="block content-a-card" data-label="Service Card 2"></div>
+                    <div class="block content-a-card" data-label="Service Card 3"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content B - Editorial Layout -->
+    <section class="content-b">
+        <span class="section-label">Content B</span>
+        <div class="container">
+            <div class="content-b-header">
+                <div class="block content-b-title" data-label="Section Title"></div>
+                <div class="block content-b-link" data-label="View All Link"></div>
+            </div>
+            <div class="content-b-grid">
+                <div class="content-b-item">
+                    <div class="block content-b-image" data-label="Project Image 1"></div>
+                    <div class="block content-b-meta" data-label="Project Meta + Tags"></div>
+                </div>
+                <div class="content-b-item">
+                    <div class="block content-b-image" data-label="Project Image 2"></div>
+                    <div class="block content-b-meta" data-label="Project Meta + Tags"></div>
+                </div>
+                <div class="content-b-item">
+                    <div class="block content-b-image" data-label="Project Image 3"></div>
+                    <div class="block content-b-meta" data-label="Project Meta + Tags"></div>
+                </div>
+                <div class="content-b-item">
+                    <div class="block content-b-image" data-label="Project Image 4"></div>
+                    <div class="block content-b-meta" data-label="Project Meta + Tags"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content C - Boundary Breakers -->
+    <section class="content-c">
+        <span class="section-label">Content C - Boundary Breakers</span>
+        <div class="container">
+            <div class="content-c-header">
+                <div class="block content-c-heading" data-label="Section: Breaking the Grid"></div>
+            </div>
+
+            <!-- Full Bleed Demo -->
+            <div class="full-bleed-demo">
+                <div class="block full-bleed-image" data-label="FULL BLEED: 100vw width, breaks container">
+                    <span class="boundary-tag">Full Bleed</span>
+                </div>
+            </div>
+
+            <!-- Breakout Demo -->
+            <div class="breakout-demo">
+                <div class="block breakout-heading breakout" data-label="BREAKOUT: Extends 40px each side">
+                    <span class="boundary-tag">Breakout</span>
+                </div>
+                <div class="block breakout-text" data-label="Regular container width text"></div>
+            </div>
+
+            <!-- Asymmetric Breakout -->
+            <div class="asymmetric-breakout">
+                <div class="block asymmetric-text" data-label="Text stays in grid"></div>
+                <div class="block asymmetric-image" data-label="BREAKOUT-RIGHT: Extends 100px right">
+                    <span class="boundary-tag">Breakout Right</span>
+                </div>
+            </div>
+
+            <!-- Edge to Edge Cards -->
+            <div class="edge-cards-container">
+                <div class="edge-cards">
+                    <div class="block edge-card" data-label="Edge Card 1"></div>
+                    <div class="block edge-card" data-label="Edge Card 2"></div>
+                    <div class="block edge-card" data-label="Edge Card 3"></div>
+                    <div class="block edge-card" data-label="Edge Card 4"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <span class="section-label" style="color: rgba(255,255,255,0.3);">Footer</span>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="block footer-brand" data-label="Logo + Tagline"></div>
+                <div class="block footer-col" data-label="Navigation Links"></div>
+                <div class="block footer-col" data-label="Contact Info"></div>
+                <div class="block footer-col" data-label="Social Links"></div>
+            </div>
+            <div class="footer-bottom">
+                <div class="block footer-copyright" data-label="Copyright Text"></div>
+                <div class="block footer-social" data-label="Social Icons"></div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const gridToggle = document.getElementById('gridToggle');
+        const gridOverlay = document.getElementById('gridOverlay');
+        const labelToggle = document.getElementById('labelToggle');
+
+        gridToggle.addEventListener('change', function() {
+            gridOverlay.classList.toggle('active', this.checked);
+        });
+
+        labelToggle.addEventListener('change', function() {
+            document.body.classList.toggle('hide-labels', !this.checked);
+        });
+    </script>
+</body>
+</html>

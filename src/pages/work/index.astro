@@ -1,0 +1,29 @@
+---
+import Base from '../../layouts/Base.astro';
+import ContentCard from '../../components/ContentCard.astro';
+import { getCollection } from 'astro:content';
+
+const work = (await getCollection('work', e => e.data.status === 'published'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<Base title="Work" description="Case studies and project work by Dale Rogers.">
+  <h1 class="text-4xl font-bold mb-2">Work</h1>
+  <p class="text-brand-muted mb-10">Case studies from service design, strategy, and digital delivery engagements.</p>
+
+  {work.length === 0 && (
+    <p class="text-brand-muted">No published case studies yet.</p>
+  )}
+
+  <div class="grid gap-6 sm:grid-cols-2">
+    {work.map(entry => (
+      <ContentCard
+        title={entry.data.title}
+        summary={entry.data.summary}
+        href={`/work/${entry.data.slug ?? entry.id}`}
+        date={entry.data.date.toISOString().slice(0, 10)}
+        tags={entry.data.tags}
+        cover={entry.data.cover}
+      />
+    ))}
+  </div>
+</Base>

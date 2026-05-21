@@ -1,0 +1,28 @@
+---
+import Base from '../../layouts/Base.astro';
+import ContentCard from '../../components/ContentCard.astro';
+import { getCollection } from 'astro:content';
+
+const articles = (await getCollection('writing', e => e.data.status === 'published'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<Base title="Writing" description="Articles and essays by Dale Rogers.">
+  <h1 class="text-4xl font-bold mb-2">Writing</h1>
+  <p class="text-brand-muted mb-10">Articles on service design, systems thinking, AI governance, and practice.</p>
+
+  {articles.length === 0 && (
+    <p class="text-brand-muted">No published articles yet.</p>
+  )}
+
+  <div class="grid gap-6 sm:grid-cols-2">
+    {articles.map(entry => (
+      <ContentCard
+        title={entry.data.title}
+        summary={entry.data.summary}
+        href={`/writing/${entry.data.slug ?? entry.id}`}
+        date={entry.data.date.toISOString().slice(0, 10)}
+        tags={entry.data.tags}
+      />
+    ))}
+  </div>
+</Base>

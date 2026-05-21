@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+import ContentCard from '../components/ContentCard.astro';
+import { getCollection } from 'astro:content';
+
+const work = (await getCollection('work', e => e.data.status === 'published'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+---
+<Base title="Home">
+  <section class="mb-16">
+    <h1 class="text-4xl font-bold mb-4">Dale Rogers</h1>
+    <p class="text-xl text-brand-muted max-w-2xl">
+      Service designer and strategy consultant. I help organisations navigate complexity,
+      design better services, and build the capability to sustain them.
+    </p>
+  </section>
+
+  {work.length > 0 && (
+    <section>
+      <h2 class="text-2xl font-semibold mb-6">Selected work</h2>
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {work.map(entry => (
+          <ContentCard
+            title={entry.data.title}
+            summary={entry.data.summary}
+            href={`/work/${entry.data.slug ?? entry.id}`}
+            date={entry.data.date.toISOString().slice(0, 10)}
+            tags={entry.data.tags}
+            cover={entry.data.cover}
+          />
+        ))}
+      </div>
+      <a href="/work" class="mt-8 inline-block text-sm font-medium">All work →</a>
+    </section>
+  )}
+</Base>

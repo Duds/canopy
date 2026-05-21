@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procedural Exploration 03 — Geometric Tessellation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+
+            --bg-primary: #F5F3EF;
+            --bg-secondary: #FFFFFF;
+            --bg-tertiary: #EDE9E4;
+
+            --text-primary: #1A1A1A;
+            --text-secondary: #4A4A4A;
+            --text-muted: #8B8B8B;
+
+            --accent-primary: #C45B3F;
+            --accent-warm: #D4A574;
+            --accent-terracotta: #B8543D;
+            --accent-ochre: #C9A227;
+
+            --rule-color: rgba(26, 26, 26, 0.08);
+            --rule-thick: rgba(26, 26, 26, 0.15);
+
+            --text-xs: 11px;
+            --text-sm: 13px;
+            --text-base: 16px;
+            --text-lg: 19px;
+            --text-xl: 22px;
+            --text-2xl: 28px;
+            --text-3xl: 36px;
+            --text-4xl: 48px;
+            --text-5xl: 64px;
+
+            --leading-tight: 0.92;
+            --leading-snug: 1.1;
+            --leading-normal: 1.5;
+
+            --tracking-tight: -0.03em;
+            --tracking-wider: 0.1em;
+
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 24px;
+            --space-6: 32px;
+            --space-7: 48px;
+            --space-8: 64px;
+            --space-9: 96px;
+            --space-10: 128px;
+
+            --max-width: 1280px;
+            --gutter: 24px;
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: var(--leading-normal);
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .type-display {
+            font-family: var(--font-display);
+            font-size: var(--text-5xl);
+            font-weight: 700;
+            line-height: var(--leading-tight);
+            letter-spacing: var(--tracking-tight);
+        }
+
+        .type-heading {
+            font-family: var(--font-display);
+            font-size: var(--text-3xl);
+            font-weight: 600;
+            line-height: var(--leading-snug);
+            letter-spacing: var(--tracking-tight);
+        }
+
+        .type-body-large {
+            font-family: var(--font-body);
+            font-size: var(--text-lg);
+            font-weight: 400;
+            line-height: var(--leading-normal);
+        }
+
+        .type-label {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            color: var(--text-muted);
+        }
+
+        .container {
+            width: 100%;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 var(--gutter);
+            position: relative;
+        }
+
+        .section {
+            padding: var(--space-9) 0;
+            position: relative;
+        }
+
+        .section-rule {
+            border-top: 1px solid var(--rule-thick);
+        }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .hero__canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .hero__content {
+            position: relative;
+            z-index: 1;
+            max-width: 640px;
+        }
+
+        .hero__label { margin-bottom: var(--space-5); }
+        .hero__title { margin-bottom: var(--space-5); }
+        .hero__desc { color: var(--text-secondary); max-width: 520px; }
+
+        /* Showcase Grid */
+        .showcase {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--gutter);
+        }
+
+        .showcase-item {
+            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--rule-color);
+            overflow: hidden;
+        }
+
+        .showcase-item--large { grid-column: span 8; }
+        .showcase-item--small { grid-column: span 4; }
+
+        .showcase-item__canvas {
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            position: relative;
+        }
+
+        .showcase-item__canvas canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .showcase-item__content {
+            padding: var(--space-5);
+            border-top: 1px solid var(--rule-color);
+        }
+
+        .showcase-item__title {
+            font-family: var(--font-display);
+            font-size: var(--text-lg);
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+        }
+
+        .showcase-item__desc {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            line-height: 1.6;
+        }
+
+        /* Full-bleed treatment */
+        .full-bleed {
+            position: relative;
+            height: 70vh;
+            overflow: hidden;
+            background: var(--bg-dark);
+        }
+
+        .full-bleed canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .full-bleed__caption {
+            position: absolute;
+            bottom: var(--space-6);
+            left: var(--space-6);
+            z-index: 1;
+            color: var(--bg-primary);
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .showcase-item--large,
+            .showcase-item--small { grid-column: span 12; }
+            .type-display { font-size: var(--text-4xl); }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <canvas class="hero__canvas" id="heroCanvas"></canvas>
+        <div class="container">
+            <div class="hero__content">
+                <div class="type-label hero__label">Procedural Exploration 03</div>
+                <h1 class="type-display hero__title">Geometric<br>Tessellation</h1>
+                <p class="type-body-large hero__desc">
+                    Voronoi cells and Delaunay triangulation generate a living mosaic. Each cell responds to its neighbors, creating emergent patterns from simple rules.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">As Project Thumbnails</div>
+            <div class="showcase">
+                <div class="showcase-item showcase-item--large">
+                    <div class="showcase-item__canvas">
+                        <canvas id="showcase1"></canvas>
+                    </div>
+                    <div class="showcase-item__content">
+                        <div class="type-label" style="margin-bottom: var(--space-2);">Brand Identity</div>
+                        <h3 class="showcase-item__title">Meridian Finance</h3>
+                        <p class="showcase-item__desc">Voronoi tessellation as the primary brand asset. Warm terracotta cells on cream.</p>
+                    </div>
+                </div>
+                <div class="showcase-item showcase-item--small">
+                    <div class="showcase-item__canvas">
+                        <canvas id="showcase2"></canvas>
+                    </div>
+                    <div class="showcase-item__content">
+                        <div class="type-label" style="margin-bottom: var(--space-2);">Web Experience</div>
+                        <h3 class="showcase-item__title">Soil & Seed</h3>
+                        <p class="showcase-item__desc">Organic cell structures for an eco-commerce platform.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="full-bleed">
+        <canvas id="fullBleed"></canvas>
+        <div class="full-bleed__caption">Interactive Voronoi — Cursor Repels Cells</div>
+    </section>
+
+    <script>
+        // ========================================
+        // VORONOI / DELAUNAY TESSELLATION
+        // ========================================
+
+        const PALETTE = {
+            bg: [245, 243, 239],
+            primary: [196, 91, 63],
+            warm: [212, 165, 116],
+            dark: [26, 26, 26],
+            ochre: [201, 162, 39]
+        };
+
+        function createTessellation(canvas, config) {
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const w = rect.width;
+            const h = rect.height;
+            const {
+                numPoints = 80,
+                animate = false,
+                interactive = false,
+                type = 'voronoi',
+                colorMode = 'gradient'
+            } = config;
+
+            let points = [];
+            let velocities = [];
+            let mouseX = w / 2;
+            let mouseY = h / 2;
+
+            for (let i = 0; i < numPoints; i++) {
+                points.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h
+                });
+                velocities.push({
+                    x: (Math.random() - 0.5) * 0.5,
+                    y: (Math.random() - 0.5) * 0.5
+                });
+            }
+
+            if (interactive) {
+                canvas.addEventListener('mousemove', (e) => {
+                    const r = canvas.getBoundingClientRect();
+                    mouseX = e.clientX - r.left;
+                    mouseY = e.clientY - r.top;
+                });
+            }
+
+            function updatePoints() {
+                for (let i = 0; i < points.length; i++) {
+                    points[i].x += velocities[i].x;
+                    points[i].y += velocities[i].y;
+
+                    if (points[i].x < 0 || points[i].x > w) velocities[i].x *= -1;
+                    if (points[i].y < 0 || points[i].y > h) velocities[i].y *= -1;
+
+                    if (interactive) {
+                        const dx = points[i].x - mouseX;
+                        const dy = points[i].y - mouseY;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 100) {
+                            const force = (100 - dist) / 100;
+                            points[i].x += dx * force * 0.1;
+                            points[i].y += dy * force * 0.1;
+                        }
+                    }
+                }
+            }
+
+            function getColorForCell(x, y, i) {
+                if (colorMode === 'gradient') {
+                    const t = (x / w + y / h) / 2;
+                    const colors = [PALETTE.primary, PALETTE.warm, PALETTE.ochre];
+                    const idx = Math.floor(t * (colors.length - 1));
+                    const mix = t * (colors.length - 1) - idx;
+                    const c1 = colors[Math.min(idx, colors.length - 1)];
+                    const c2 = colors[Math.min(idx + 1, colors.length - 1)];
+                    const r = Math.round(c1[0] * (1 - mix) + c2[0] * mix);
+                    const g = Math.round(c1[1] * (1 - mix) + c2[1] * mix);
+                    const b = Math.round(c1[2] * (1 - mix) + c2[2] * mix);
+                    return `rgb(${r},${g},${b})`;
+                } else if (colorMode === 'index') {
+                    const colors = [PALETTE.primary, PALETTE.warm, PALETTE.ochre, PALETTE.dark];
+                    const c = colors[i % colors.length];
+                    return `rgb(${c[0]},${c[1]},${c[2]})`;
+                }
+                return `rgb(${PALETTE.primary.join(',')})`;
+            }
+
+            function drawVoronoi() {
+                const imageData = ctx.createImageData(canvas.width, canvas.height);
+                const data = imageData.data;
+
+                for (let y = 0; y < canvas.height; y++) {
+                    for (let x = 0; x < canvas.width; x++) {
+                        let minDist = Infinity;
+                        let closestIndex = 0;
+                        const px = x / dpr;
+                        const py = y / dpr;
+
+                        for (let i = 0; i < points.length; i++) {
+                            const dx = px - points[i].x;
+                            const dy = py - points[i].y;
+                            const dist = dx * dx + dy * dy;
+                            if (dist < minDist) {
+                                minDist = dist;
+                                closestIndex = i;
+                            }
+                        }
+
+                        const color = getColorForCell(px, py, closestIndex);
+                        const rgb = color.match(/\d+/g).map(Number);
+                        const idx = (y * canvas.width + x) * 4;
+                        data[idx] = rgb[0];
+                        data[idx + 1] = rgb[1];
+                        data[idx + 2] = rgb[2];
+                        data[idx + 3] = 255;
+                    }
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+
+                // Draw cell borders
+                ctx.strokeStyle = 'rgba(245, 243, 239, 0.3)';
+                ctx.lineWidth = 0.5;
+
+                for (let y = 0; y < h; y += 2) {
+                    for (let x = 0; x < w; x += 2) {
+                        let minDist = Infinity;
+                        let closestIndex = 0;
+                        let secondClosest = Infinity;
+
+                        for (let i = 0; i < points.length; i++) {
+                            const dx = x - points[i].x;
+                            const dy = y - points[i].y;
+                            const dist = dx * dx + dy * dy;
+                            if (dist < minDist) {
+                                secondClosest = minDist;
+                                minDist = dist;
+                                closestIndex = i;
+                            } else if (dist < secondClosest) {
+                                secondClosest = dist;
+                            }
+                        }
+
+                        if (Math.abs(minDist - secondClosest) < 100) {
+                            ctx.fillStyle = 'rgba(245, 243, 239, 0.4)';
+                            ctx.fillRect(x, y, 1, 1);
+                        }
+                    }
+                }
+            }
+
+            function drawDelaunay() {
+                ctx.fillStyle = `rgb(${PALETTE.bg.join(',')})`;
+                ctx.fillRect(0, 0, w, h);
+
+                // Simple Delaunay approximation via distance threshold
+                const maxEdgeLength = 120;
+
+                for (let i = 0; i < points.length; i++) {
+                    for (let j = i + 1; j < points.length; j++) {
+                        const dx = points[i].x - points[j].x;
+                        const dy = points[i].y - points[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < maxEdgeLength) {
+                            const t = dist / maxEdgeLength;
+                            const colors = [PALETTE.primary, PALETTE.warm, PALETTE.ochre];
+                            const idx = Math.floor(t * (colors.length - 1));
+                            const mix = t * (colors.length - 1) - idx;
+                            const c1 = colors[Math.min(idx, colors.length - 1)];
+                            const c2 = colors[Math.min(idx + 1, colors.length - 1)];
+                            const r = Math.round(c1[0] * (1 - mix) + c2[0] * mix);
+                            const g = Math.round(c1[1] * (1 - mix) + c2[1] * mix);
+                            const b = Math.round(c1[2] * (1 - mix) + c2[2] * mix);
+
+                            ctx.strokeStyle = `rgba(${r},${g},${b},${1 - t})`;
+                            ctx.lineWidth = 0.5 + (1 - t) * 1.5;
+                            ctx.beginPath();
+                            ctx.moveTo(points[i].x, points[i].y);
+                            ctx.lineTo(points[j].x, points[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                // Draw points
+                for (let i = 0; i < points.length; i++) {
+                    ctx.fillStyle = `rgb(${PALETTE.dark.join(',')})`;
+                    ctx.beginPath();
+                    ctx.arc(points[i].x, points[i].y, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            function draw() {
+                if (type === 'voronoi') {
+                    drawVoronoi();
+                } else {
+                    drawDelaunay();
+                }
+            }
+
+            draw();
+
+            if (animate) {
+                function loop() {
+                    updatePoints();
+                    draw();
+                    requestAnimationFrame(loop);
+                }
+                loop();
+            }
+        }
+
+        // ========================================
+        // INITIALIZE
+        // ========================================
+        function init() {
+            const heroCanvas = document.getElementById('heroCanvas');
+            if (heroCanvas) createTessellation(heroCanvas, { numPoints: 60, animate: true, type: 'voronoi', colorMode: 'gradient' });
+
+            const showcase1 = document.getElementById('showcase1');
+            if (showcase1) createTessellation(showcase1, { numPoints: 40, animate: true, type: 'voronoi', colorMode: 'index' });
+
+            const showcase2 = document.getElementById('showcase2');
+            if (showcase2) createTessellation(showcase2, { numPoints: 50, animate: false, type: 'delaunay', colorMode: 'gradient' });
+
+            const fullBleed = document.getElementById('fullBleed');
+            if (fullBleed) createTessellation(fullBleed, { numPoints: 100, animate: true, interactive: true, type: 'voronoi', colorMode: 'gradient' });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+
+</body>
+</html>

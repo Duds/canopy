@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procedural Exploration 01 — Halftone Dot-Matrix</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+
+            --bg-primary: #F5F3EF;
+            --bg-secondary: #FFFFFF;
+            --bg-tertiary: #EDE9E4;
+            --bg-dark: #1A1A1A;
+
+            --text-primary: #1A1A1A;
+            --text-secondary: #4A4A4A;
+            --text-muted: #8B8B8B;
+            --text-inverse: #FFFFFF;
+
+            --accent-primary: #C45B3F;
+            --accent-warm: #D4A574;
+            --accent-terracotta: #B8543D;
+
+            --rule-color: rgba(26, 26, 26, 0.08);
+            --rule-thick: rgba(26, 26, 26, 0.15);
+
+            --text-xs: 11px;
+            --text-sm: 13px;
+            --text-base: 16px;
+            --text-lg: 19px;
+            --text-xl: 22px;
+            --text-2xl: 28px;
+            --text-3xl: 36px;
+            --text-4xl: 48px;
+            --text-5xl: 64px;
+            --text-6xl: 88px;
+
+            --leading-tight: 0.92;
+            --leading-snug: 1.1;
+            --leading-normal: 1.5;
+
+            --tracking-tight: -0.03em;
+            --tracking-wider: 0.1em;
+
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-5: 24px;
+            --space-6: 32px;
+            --space-7: 48px;
+            --space-8: 64px;
+            --space-9: 96px;
+            --space-10: 128px;
+
+            --max-width: 1280px;
+            --gutter: 24px;
+
+            --radius-sm: 2px;
+            --radius-md: 4px;
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            line-height: var(--leading-normal);
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ========================================
+           TYPOGRAPHY
+           ======================================== */
+        .type-display {
+            font-family: var(--font-display);
+            font-size: var(--text-5xl);
+            font-weight: 700;
+            line-height: var(--leading-tight);
+            letter-spacing: var(--tracking-tight);
+        }
+
+        .type-heading {
+            font-family: var(--font-display);
+            font-size: var(--text-3xl);
+            font-weight: 600;
+            line-height: var(--leading-snug);
+            letter-spacing: var(--tracking-tight);
+        }
+
+        .type-body-large {
+            font-family: var(--font-body);
+            font-size: var(--text-lg);
+            font-weight: 400;
+            line-height: var(--leading-normal);
+        }
+
+        .type-label {
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+            color: var(--text-muted);
+        }
+
+        /* ========================================
+           LAYOUT
+           ======================================== */
+        .container {
+            width: 100%;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 var(--gutter);
+            position: relative;
+        }
+
+        .section {
+            padding: var(--space-9) 0;
+            position: relative;
+        }
+
+        .section-rule {
+            border-top: 1px solid var(--rule-thick);
+        }
+
+        /* ========================================
+           HERO WITH HALFTONE CANVAS
+           ======================================== */
+        .hero {
+            position: relative;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .hero__canvas {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .hero__content {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+        }
+
+        .hero__label {
+            margin-bottom: var(--space-5);
+        }
+
+        .hero__title {
+            margin-bottom: var(--space-5);
+        }
+
+        .hero__desc {
+            color: var(--text-secondary);
+            max-width: 540px;
+        }
+
+        /* ========================================
+           HALFTONE CARD SYSTEM
+           ======================================== */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: var(--gutter);
+        }
+
+        .card {
+            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--rule-color);
+            overflow: hidden;
+        }
+
+        .card--featured {
+            grid-column: span 7;
+        }
+
+        .card--secondary {
+            grid-column: span 5;
+        }
+
+        .card__halftone {
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card__halftone canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .card__content {
+            padding: var(--space-6);
+        }
+
+        .card__meta {
+            margin-bottom: var(--space-3);
+        }
+
+        .card__title {
+            font-family: var(--font-display);
+            font-size: var(--text-xl);
+            font-weight: 600;
+            line-height: var(--leading-snug);
+            margin-bottom: var(--space-3);
+        }
+
+        .card__desc {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            line-height: 1.6;
+        }
+
+        /* ========================================
+           IMAGE TREATMENT SECTION
+           ======================================== */
+        .treatment-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--gutter);
+        }
+
+        .treatment-item {
+            position: relative;
+            aspect-ratio: 4 / 5;
+            background: var(--bg-secondary);
+            border: 1px solid var(--rule-color);
+            overflow: hidden;
+        }
+
+        .treatment-item canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .treatment-item__label {
+            position: absolute;
+            bottom: var(--space-4);
+            left: var(--space-4);
+            background: var(--bg-primary);
+            padding: var(--space-2) var(--space-3);
+            font-family: var(--font-mono);
+            font-size: var(--text-xs);
+            text-transform: uppercase;
+            letter-spacing: var(--tracking-wider);
+        }
+
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
+        @media (max-width: 768px) {
+            .card--featured,
+            .card--secondary {
+                grid-column: span 12;
+            }
+
+            .treatment-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .type-display {
+                font-size: var(--text-4xl);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hero with animated halftone -->
+    <section class="hero">
+        <canvas class="hero__canvas" id="heroCanvas"></canvas>
+        <div class="container">
+            <div class="hero__content">
+                <div class="type-label hero__label">Procedural Exploration 01</div>
+                <h1 class="type-display hero__title">Halftone<br>Dot-Matrix</h1>
+                <p class="type-body-large hero__desc">
+                    A generative image treatment built from code. No stock photography. No illustration libraries. Just noise, threshold, and the warm weight of terracotta dots on cream.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Card system with halftone textures -->
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">As Card Media</div>
+            <div class="card-grid">
+                <div class="card card--featured">
+                    <div class="card__halftone">
+                        <canvas id="cardCanvas1"></canvas>
+                    </div>
+                    <div class="card__content">
+                        <div class="type-label card__meta">Featured Project</div>
+                        <h3 class="card__title">Brand system for a neural interface</h3>
+                        <p class="card__desc">Procedural dot-matrix textures replace hero photography. The density of the halftone maps to data complexity in the interface.</p>
+                    </div>
+                </div>
+                <div class="card card--secondary">
+                    <div class="card__halftone">
+                        <canvas id="cardCanvas2"></canvas>
+                    </div>
+                    <div class="card__content">
+                        <div class="type-label card__meta">Case Study</div>
+                        <h3 class="card__title">E-commerce values</h3>
+                        <p class="card__desc">Warm terracotta dithering on off-white. The halftone creates texture without clutter.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Image treatment variations -->
+    <section class="section section-rule">
+        <div class="container">
+            <div class="type-label" style="margin-bottom: var(--space-6);">Treatment Variations</div>
+            <div class="treatment-grid">
+                <div class="treatment-item">
+                    <canvas id="treatment1"></canvas>
+                    <div class="treatment-item__label">Ordered Dither</div>
+                </div>
+                <div class="treatment-item">
+                    <canvas id="treatment2"></canvas>
+                    <div class="treatment-item__label">Radial Gradient</div>
+                </div>
+                <div class="treatment-item">
+                    <canvas id="treatment3"></canvas>
+                    <div class="treatment-item__label">Noise Field</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // ========================================
+        // HALFTONE GENERATOR
+        // ========================================
+
+        const PALETTE = {
+            bg: [245, 243, 239],
+            dot: [196, 91, 63],
+            dark: [26, 26, 26],
+            warm: [212, 165, 116]
+        };
+
+        function createHalftone(canvas, config) {
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+
+            const w = rect.width;
+            const h = rect.height;
+            const { type, density = 8, animate = false } = config;
+
+            let time = 0;
+
+            function draw() {
+                ctx.fillStyle = `rgb(${PALETTE.bg.join(',')})`;
+                ctx.fillRect(0, 0, w, h);
+
+                const cols = Math.floor(w / density);
+                const rows = Math.floor(h / density);
+                const radius = density * 0.4;
+
+                for (let y = 0; y < rows; y++) {
+                    for (let x = 0; x < cols; x++) {
+                        const px = x * density + density / 2;
+                        const py = y * density + density / 2;
+                        let brightness = 0;
+
+                        if (type === 'gradient') {
+                            const dx = px - w / 2;
+                            const dy = py - h / 2;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            brightness = 1 - Math.min(dist / (Math.max(w, h) * 0.6), 1);
+                        } else if (type === 'noise') {
+                            const nx = x * 0.15 + time * 0.005;
+                            const ny = y * 0.15 + time * 0.003;
+                            brightness = (Math.sin(nx) * Math.cos(ny) + 1) / 2;
+                        } else if (type === 'ordered') {
+                            const bayer = [
+                                [0, 8, 2, 10],
+                                [12, 4, 14, 6],
+                                [3, 11, 1, 9],
+                                [15, 7, 13, 5]
+                            ];
+                            const threshold = bayer[y % 4][x % 4] / 16;
+                            const noise = (Math.sin(x * 0.1) * Math.cos(y * 0.1) + 1) / 2;
+                            brightness = noise > threshold ? 1 : 0.3;
+                        } else if (type === 'wave') {
+                            const wave = Math.sin(px * 0.02 + time * 0.02) * Math.cos(py * 0.015 + time * 0.01);
+                            brightness = (wave + 1) / 2;
+                        }
+
+                        const r = radius * brightness;
+                        if (r > 0.5) {
+                            const mix = brightness;
+                            const rCol = Math.round(PALETTE.dot[0] * mix + PALETTE.warm[0] * (1 - mix));
+                            const gCol = Math.round(PALETTE.dot[1] * mix + PALETTE.warm[1] * (1 - mix));
+                            const bCol = Math.round(PALETTE.dot[2] * mix + PALETTE.warm[2] * (1 - mix));
+                            ctx.fillStyle = `rgb(${rCol},${gCol},${bCol})`;
+                            ctx.beginPath();
+                            ctx.arc(px, py, r, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                }
+            }
+
+            draw();
+
+            if (animate) {
+                function loop() {
+                    time += 1;
+                    draw();
+                    requestAnimationFrame(loop);
+                }
+                loop();
+            }
+        }
+
+        // ========================================
+        // INITIALIZE
+        // ========================================
+
+        function init() {
+            const heroCanvas = document.getElementById('heroCanvas');
+            if (heroCanvas) createHalftone(heroCanvas, { type: 'noise', density: 14, animate: true });
+
+            const card1 = document.getElementById('cardCanvas1');
+            if (card1) createHalftone(card1, { type: 'wave', density: 10 });
+
+            const card2 = document.getElementById('cardCanvas2');
+            if (card2) createHalftone(card2, { type: 'gradient', density: 12 });
+
+            const t1 = document.getElementById('treatment1');
+            if (t1) createHalftone(t1, { type: 'ordered', density: 8 });
+
+            const t2 = document.getElementById('treatment2');
+            if (t2) createHalftone(t2, { type: 'gradient', density: 10 });
+
+            const t3 = document.getElementById('treatment3');
+            if (t3) createHalftone(t3, { type: 'noise', density: 6, animate: true });
+        }
+
+        // Wait for layout
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+
+</body>
+</html>
