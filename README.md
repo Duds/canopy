@@ -4,10 +4,13 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![Azure Static Web Apps](https://img.shields.io/badge/Azure_Static_Web_Apps-0078D4?style=for-the-badge&logo=microsoft-azure&logoColor=white)](https://azure.microsoft.com/services/static-web-apps/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Static site](https://img.shields.io/badge/Static_Site-6B7280?style=for-the-badge)](#)
-[![Portfolio](https://img.shields.io/badge/Portfolio-FF0080?style=for-the-badge)](#)
 
-Dale Rogers personal portfolio.
+[![Static site](https://img.shields.io/badge/Static_Site-6B7280?style=for-the-badge)](https://www.staticgen.com)
+[![Portfolio](https://img.shields.io/badge/Portfolio-FF0080?style=for-the-badge)](https://github.com/Duds/canopy)
+
+About
+
+Canopy is Dale Rogers' personal portfolio site showcasing case studies and articles. It uses Astro for site generation, Tailwind for styling, and is deployed to Azure Static Web Apps.
 
 Built with Astro + Tailwind, deployed to Azure Static Web Apps.
 
