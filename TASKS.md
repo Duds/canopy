@@ -1,10 +1,12 @@
 ---
-updated: 2026-04-27
+updated: 2026-06-27
 ---
 
 # canopy — Tasks
 
 ## Now
+
+- [ ] #20260627-001 @dale Rotate exposed OpenAI + Kimi API keys and update ~/.mcp-env {priority:urgent} → [detail](../_tasks/20260627-001-rotate-exposed-credentials.md)
 
 - [x] 20260426-001 Write PRD.md from alignment interview context
 - [x] 20260426-002 Write HLD.md — stack diagram, content model, Azure deployment pipeline
