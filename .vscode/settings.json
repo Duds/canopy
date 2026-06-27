@@ -1,0 +1,6 @@
+{
+  "kimi.environmentVariables": {
+    "KIMI_API_KEY": "${env:KIMI_API_KEY}",
+    "KIMI_CLI_API_KEY": "${env:KIMI_CLI_API_KEY}"
+  }
+}
